@@ -13,6 +13,7 @@ async function bootstrap() {
   const uri = `${process.env.GRPC_HOST}:${process.env.GRPC_PORT}`
   console.log(`uri ${uri}`)
 
+
 // microservice #1
   const microserviceGrpc = app.connectMicroservice<MicroserviceOptions>({
     transport: Transport.GRPC,
