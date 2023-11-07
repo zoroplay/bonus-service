@@ -188,7 +188,7 @@ export class GrpcController implements OnModuleInit  {
     }
 
     @GrpcMethod('BonusService', 'PlaceBonusBet')
-    PlaceBonusBet(data: UserBet): Promise<BonusResponse> {
+    PlaceBonusBet(data: UserBet): Promise<PlaceBetResponse> {
 
         return this.CreateBet(data)
 
