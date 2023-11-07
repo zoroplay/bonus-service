@@ -229,15 +229,15 @@ export class GrpcController implements OnModuleInit  {
 
     }
 
-    async CreateBet(data: UserBet): Promise<BonusResponse> {
+    async CreateBet(data: UserBet): Promise<PlaceBetResponse> {
 
         // validations
         if (data.clientId == 0) {
 
             return {
                 status: 401,
-                description: "missing clientID",
-                bonus: null
+                statusDescription: "missing clientID",
+                betId: 0
             }
         }
 
@@ -245,8 +245,8 @@ export class GrpcController implements OnModuleInit  {
 
             return {
                 status: 401,
-                description: "missing bonus ID",
-                bonus: null
+                statusDescription: "missing bonus ID",
+                betId: 0
             }
         }
 
@@ -254,8 +254,8 @@ export class GrpcController implements OnModuleInit  {
 
             return {
                 status: 401,
-                description: "missing userID",
-                bonus: null
+                statusDescription: "missing userID",
+                betId: 0
             }
         }
 
@@ -263,8 +263,8 @@ export class GrpcController implements OnModuleInit  {
 
             return {
                 status: 401,
-                description: "missing slips",
-                bonus: null
+                statusDescription: "missing slips",
+                betId: 0
             }
         }
 
@@ -285,8 +285,8 @@ export class GrpcController implements OnModuleInit  {
 
             return {
                 status: 401,
-                description: "bonus type does not exist or is expired",
-                bonus: null
+                statusDescription: "bonus type does not exist or is expired",
+                betId: 0
             }
         }
 
@@ -305,8 +305,8 @@ export class GrpcController implements OnModuleInit  {
 
             return {
                 status: 401,
-                description: "bonus type does not exist",
-                bonus: null
+                statusDescription: "bonus type does not exist",
+                betId: 0
             }
 
         }
@@ -316,8 +316,8 @@ export class GrpcController implements OnModuleInit  {
 
             return {
                 status: 401,
-                description: "bonus has expired",
-                bonus: null
+                statusDescription: "bonus has expired",
+                betId: 0
             }
 
         }
@@ -328,8 +328,8 @@ export class GrpcController implements OnModuleInit  {
 
             return {
                 status: 401,
-                description: "You have insufficient bonus balance to place a bet of "+data.stake+". Your bonus balance is "+userBonus.balance,
-                bonus: null
+                statusDescription: "You have insufficient bonus balance to place a bet of "+data.stake+". Your bonus balance is "+userBonus.balance,
+                betId: 0
             }
 
         }
@@ -338,8 +338,8 @@ export class GrpcController implements OnModuleInit  {
 
             return {
                 status: 401,
-                description: "Your stake of "+data.stake+" is below the minimum betting stake for this bonus. Place a bet with a stake of at least "+existingBonus.minimum_betting_stake,
-                bonus: null
+                statusDescription: "Your stake of "+data.stake+" is below the minimum betting stake for this bonus. Place a bet with a stake of at least "+existingBonus.minimum_betting_stake,
+                betId: 0
             }
         }
 
@@ -350,8 +350,8 @@ export class GrpcController implements OnModuleInit  {
 
             return {
                 status: 401,
-                description: "You need atleast "+existingBonus.minimum_events+" events to use this bonus",
-                bonus: null
+                statusDescription: "You need atleast "+existingBonus.minimum_events+" events to use this bonus",
+                betId: 0
             }
         }
 
@@ -364,34 +364,34 @@ export class GrpcController implements OnModuleInit  {
         for (const selection of userSelection) {
 
             if (selection.eventName.length === 0 )
-                return {status: 400, description: "missing event name in your selection ", bonus: null};
+                return {status: 400, statusDescription: "missing event name in your selection ", betId: 0};
 
             if (selection.eventType.length === 0 )
                 selection.eventType = "match";
 
             if (selection.eventId === 0 )
-                return {status: 400, description: "missing event ID in your selection ", bonus: null};
+                return {status: 400, statusDescription: "missing event ID in your selection ", betId: 0};
 
             if (selection.producerId === 0 )
-                return {status: 400, description: "missing producer id in your selection ", bonus: null};
+                return {status: 400, statusDescription: "missing producer id in your selection ", betId: 0};
 
             if (selection.marketId === 0 )
-                return {status: 400, description: "missing market id in your selection ", bonus: null};
+                return {status: 400, statusDescription: "missing market id in your selection ", betId: 0};
 
             if (selection.marketName.length === 0 )
-                return {status: 400, description: "missing market name in your selection ", bonus: null};
+                return {status: 400, statusDescription: "missing market name in your selection ", betId: 0};
 
             if (selection.outcomeName.length === 0 )
-                return {status: 400, description: "missing outcome name in your selection ", bonus: null};
+                return {status: 400, statusDescription: "missing outcome name in your selection ", betId: 0};
 
             if (selection.outcomeId.length === 0 )
-                return {status: 400, description: "missing outcome id in your selection ", bonus: null};
+                return {status: 400, statusDescription: "missing outcome id in your selection ", betId: 0};
 
             if (selection.specifier === undefined )
-                return {status: 400, description: "missing specifier in your selection ", bonus: null};
+                return {status: 400, statusDescription: "missing specifier in your selection ", betId: 0};
 
             if (selection.odds === 0 )
-                return {status: 400, description: "missing odds in your selection ", bonus: null};
+                return {status: 400, statusDescription: "missing odds in your selection ", betId: 0};
 
             // get odds
             let odd = await this.getOdds(selection.producerId, selection.eventId, selection.marketId, selection.specifier, selection.outcomeId)
@@ -401,9 +401,9 @@ export class GrpcController implements OnModuleInit  {
                 this.logger.info("selection suspended " + JSON.stringify(selection))
 
                 return {
-                    description: "Your selection " + selection.eventName + " - " + selection.marketName + " is suspended",
+                    statusDescription: "Your selection " + selection.eventName + " - " + selection.marketName + " is suspended",
                     status: 400,
-                    bonus: null
+                    betId: 0
                 };
 
             }
@@ -414,8 +414,8 @@ export class GrpcController implements OnModuleInit  {
 
                 return {
                     status: 401,
-                    description: "You need at least odds of "+existingBonus.minimum_odds_per_event+" for each event to use this bonus",
-                    bonus: null
+                    statusDescription: "You need at least odds of "+existingBonus.minimum_odds_per_event+" for each event to use this bonus",
+                    betId: 0
                 }
             }
 
@@ -440,7 +440,7 @@ export class GrpcController implements OnModuleInit  {
         }
 
         if (selections.length === 0)
-            return {status: 400, description: "missing selections", bonus: null};
+            return {status: 400, statusDescription: "missing selections", betId: 0};
 
         if(existingBonus.minimum_total_odds > 0 && existingBonus.minimum_total_odds < totalOdds) {
 
@@ -448,8 +448,8 @@ export class GrpcController implements OnModuleInit  {
 
             return {
                 status: 401,
-                description: "You need at least total odds of "+existingBonus.minimum_total_odds+" to use this bonus",
-                bonus: null
+                statusDescription: "You need at least total odds of "+existingBonus.minimum_total_odds+" to use this bonus",
+                betId: 0
             }
         }
 
@@ -465,7 +465,7 @@ export class GrpcController implements OnModuleInit  {
         transaction.transaction_type = TRANSACTION_TYPE_DEBIT
         transaction.reference_type = REFERENCE_TYPE_PLACEBET
         transaction.reference_id = data.bonusId
-        transaction.description = "Customer placed a bet using "+existingBonus.name+" bonuse"
+        transaction.description = "Customer placed a bet using "+existingBonus.name+" bonus"
         const transactionResult = await this.transactionsRepository.save(transaction)
 
         // place bet
@@ -488,9 +488,9 @@ export class GrpcController implements OnModuleInit  {
             })
 
             return {
-                bonus: null,
+                betId: 0,
                 status: betResponse.status,
-                description: betResponse.statusDescription,
+                statusDescription: betResponse.statusDescription,
             }
 
         } else {
@@ -526,9 +526,9 @@ export class GrpcController implements OnModuleInit  {
             bonusBet.pending_amount = pending_amount
             const bonusBetResult = await this.bonusBetRepository.save(bonusBet)
             return {
-                bonus: bonusBetResult,
+                betId: betResponse.betId,
                 status: 200,
-                description: "Bet placed successfully",
+                statusDescription: "Bet placed successfully",
             }
 
         }
