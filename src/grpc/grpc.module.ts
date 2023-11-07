@@ -10,9 +10,37 @@ import {Lostbet} from "../entity/lostbet.entity";
 import {Referral} from "../entity/referral.entity";
 import {Sharebet} from "../entity/sharebet.entity";
 import {Cashback} from "../entity/cashback.entity";
+import {join} from "path";
+import {ClientsModule, Transport} from "@nestjs/microservices";
+import {Bonusbet} from "../entity/bonusbet.entity";
+import {Campaignbonus} from "../entity/campaignbonus.entity";
+import {Transactions} from "../entity/transactions.entity";
 
 @Module({
-    imports: [TypeOrmModule.forFeature([Bonus,Firstdeposit,Freebet,Lostbet,Referral,Sharebet,Userbonus,Cashback]),
+    imports: [
+        TypeOrmModule.forFeature([Bonus,Firstdeposit,Freebet,Lostbet,Referral,Sharebet,Userbonus,Cashback,Bonusbet,Campaignbonus,Transactions]),
+        ClientsModule.register([
+            {
+                name: 'BETTING_SERVICE',
+                transport: Transport.GRPC,
+                options: {
+                    package: 'betting',
+                    protoPath: join(__dirname, '/proto/betting.proto'),
+                    url: process.env.BETTING_SERVICE_GRPC_URI
+                },
+            },
+        ]),
+        ClientsModule.register([
+            {
+                name: 'FEEDS_SERVICE',
+                transport: Transport.GRPC,
+                options: {
+                    package: 'protobuf',
+                    protoPath: join(__dirname, '/proto/odds.proto'),
+                    url: process.env.FEEDS_SERVICE_GRPC_URI
+                },
+            },
+        ]),
     ],
     controllers: [GrpcController],
     providers: [BonusService]

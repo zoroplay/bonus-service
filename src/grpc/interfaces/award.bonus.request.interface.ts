@@ -1,6 +1,8 @@
 export interface AwardBonusRequest {
     clientId: number;
     bonusType: string;
-    userId: number;
+    bonusId: number;
+    userId: string;
     amount: number;
+    baseValue: number
 }

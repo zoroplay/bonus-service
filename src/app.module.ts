@@ -16,6 +16,9 @@ import {Lostbet} from "./entity/lostbet.entity";
 import {Referral} from "./entity/referral.entity";
 import {Sharebet} from "./entity/sharebet.entity";
 import {Userbonus} from "./entity/userbonus.entity";
+import {Bonusbet} from "./entity/bonusbet.entity";
+import {Campaignbonus} from "./entity/campaignbonus.entity";
+import {Transactions} from "./entity/transactions.entity";
 
 @Module({
     imports: [
@@ -35,7 +38,7 @@ import {Userbonus} from "./entity/userbonus.entity";
           username: process.env.DB_USERNAME,
           password: process.env.DB_PASSWORD,
           database: process.env.DB_NAME,
-          entities:[Bonus,Firstdeposit,Freebet,Lostbet,Referral,Sharebet,Userbonus,Cashback],
+          entities:[Bonus,Firstdeposit,Freebet,Lostbet,Referral,Sharebet,Userbonus,Cashback,Bonusbet,Campaignbonus,Transactions],
           //entities: [__dirname + '/entity/*.ts'],
           //entities: [__dirname + '/ ** / *.entity{.ts,.js}'],
           //entities: [__dirname + '/ ** / *.entity{.ts,.js}'],

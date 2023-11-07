@@ -16,6 +16,9 @@ import {DepositService} from "./workers/deposit.service";
 import {UserService} from "./workers/user.service";
 import {Cashback} from "../entity/cashback.entity";
 import {BonusService} from "../grpc/services/bonus.service";
+import {Bonusbet} from "../entity/bonusbet.entity";
+import {Campaignbonus} from "../entity/campaignbonus.entity";
+import {Transactions} from "../entity/transactions.entity";
 
 let exchanges = [];
 
@@ -46,7 +49,7 @@ for (const name of names) {
 
 @Module({
     imports: [
-        TypeOrmModule.forFeature([Bonus,Firstdeposit,Freebet,Lostbet,Referral,Sharebet,Userbonus,Cashback]),
+        TypeOrmModule.forFeature([Bonus,Firstdeposit,Freebet,Lostbet,Referral,Sharebet,Userbonus,Cashback,Bonusbet,Campaignbonus,Transactions]),
         RabbitMQModule.forRoot(RabbitMQModule, {
             exchanges: exchanges,
             uri: process.env.RABITTMQ_URI,

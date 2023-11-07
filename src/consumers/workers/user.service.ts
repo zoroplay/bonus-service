@@ -84,6 +84,8 @@ export class UserService {
             userId: data.user_id,
             amount: bonusSettings.bonus_amount,
             bonusType: BONUS_TYPE_FREEBET,
+            bonusId: 0,
+            baseValue: 0,
         })
 
         return res.bonus.amount
@@ -149,6 +151,8 @@ export class UserService {
             userId: data.user_id,
             amount: bonusSettings.bonus_amount,
             bonusType: BONUS_TYPE_REFERRAL,
+            bonusId: 0,
+            baseValue: data.amount
         })
 
         return res.bonus.amount

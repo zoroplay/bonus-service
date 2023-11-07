@@ -8,6 +8,7 @@ import {Userbonus} from "../../entity/userbonus.entity";
 import {BonusService} from "../../grpc/services/bonus.service";
 import {Sharebet} from "../../entity/sharebet.entity";
 import {Cashback} from "../../entity/cashback.entity";
+import {AwardBonusRequest} from "../../grpc/interfaces/award.bonus.request.interface";
 
 @Injectable()
 export class BetService {
@@ -85,9 +86,11 @@ export class BetService {
 
         let res = await this.bonusService.awardBonus({
             clientId: data.client_id,
-            userId: data.user_id,
+            userId: ""+data.user_id,
             amount: bonusSettings.bonus_amount,
             bonusType: BONUS_TYPE_SHARE_BET,
+            bonusId: 0,
+            baseValue: data.stake,
         })
 
         return res.bonus.amount
@@ -187,6 +190,8 @@ export class BetService {
             userId: data.user_id,
             amount: bonusSettings.bonus_amount,
             bonusType: BONUS_TYPE_CASHBACK,
+            bonusId: 0,
+            baseValue: data.stake,
         })
 
         return res.bonus.amount

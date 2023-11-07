@@ -1,4 +1,5 @@
 export interface CreateBonusRequest {
+    id: number;
     clientId: number;
     bonusType: string;
     minimumStake: number;
@@ -14,4 +15,8 @@ export interface CreateBonusRequest {
     resetIntervalType: string;
     minimumEntryAmount: number;
     bonusAmount: number;
+    bonusAmountMultiplier: number;
+    rolloverCount: number;
+    name: string;
+    minimumBettingStake: number;
 }

@@ -12,8 +12,16 @@ export class Bonus {
     client_id: number;
 
     @Index()
+    @Column({ type: "varchar", length: 100, nullable: false })
+    name: string;
+
+    @Index()
     @Column({ type: "int", default: "0" })
     status: number;
+
+    @Index()
+    @Column({ type: "int", default: "0" })
+    rollover_count: number;
 
     @Index()
     @Column({ type: "varchar", length: 100, nullable: false })
@@ -26,6 +34,10 @@ export class Bonus {
     @Index()
     @Column({ type: "decimal", precision: 20, scale: 2, nullable: true, default: 0 })
     bonus_amount: number;
+
+    @Index()
+    @Column({ type: "int", default: "0" })
+    bonus_amount_multiplier: number;
 
     @Index()
     @Column({ type: "decimal", precision: 20, scale: 2, nullable: true, default: 0 })
@@ -66,6 +78,10 @@ export class Bonus {
     @Index()
     @Column({ type: "int", default: "0" })
     minimum_lost_games: number;
+
+    @Index()
+    @Column({ type: "int", default: "0" })
+    minimum_betting_stake: number;
 
     @Index()
     @CreateDateColumn()

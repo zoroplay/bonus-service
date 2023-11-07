@@ -8,11 +8,11 @@ import {DeleteBonusResponse} from "../interfaces/delete.bonus.response.interface
 import {GetBonusResponse} from "../interfaces/get.bonus.response.interface";
 import {Userbonus} from "../../entity/userbonus.entity";
 import {GetUserBonusRequest} from "../interfaces/get.user.bonus.request.interface";
-import {GetUserBonusResponse} from "../interfaces/get.user.bonus.response.interface";
+import {GetUserBonusResponse, UserBetDTO, UserBonus} from "../interfaces/get.user.bonus.response.interface";
 import {AwardBonusRequest} from "../interfaces/award.bonus.request.interface";
 import {UserBonusResponse} from "../interfaces/user.bonus.response.interface";
 import {UserBet} from "../interfaces/user.bet.interface";
-import {HasBonusResponse} from "../interfaces/has.bonus.response.interface";
+import {BonusResponse} from "../interfaces/has.bonus.response.interface";
 import {MoreThanOrEqual, Repository} from "typeorm"
 import {BonusStatusRequest} from "../interfaces/bonus.status.request.interface";
 import {
@@ -20,8 +20,19 @@ import {
     BONUS_TYPE_FIRST_DEPOSIT,
     BONUS_TYPE_FREEBET,
     BONUS_TYPE_REFERRAL,
-    BONUS_TYPE_SHARE_BET
+    BONUS_TYPE_SHARE_BET, REFERENCE_TYPE_PLACEBET, TRANSACTION_TYPE_DEBIT
 } from "../../constants";
+import {Transactions} from "../../entity/transactions.entity";
+import {
+    AllCampaignBonus, CampaignBonusData,
+    CreateCampaignBonusDto,
+    DeleteCampaignBonusDto, GetBonusByClientID,
+    RedeemCampaignBonusDto,
+    UpdateCampaignBonusDto
+} from "../interfaces/campaign.bonus.interface";
+import {Campaignbonus} from "../../entity/campaignbonus.entity";
+import any = jasmine.any;
+import {Bonusbet} from "../../entity/bonusbet.entity";
 
 export class BonusService {
 
@@ -33,6 +44,15 @@ export class BonusService {
 
         @InjectRepository(Userbonus)
         private userBonusRepository: Repository<Userbonus>,
+
+        @InjectRepository(Transactions)
+        private transactionsRepository: Repository<Transactions>,
+
+        @InjectRepository(Campaignbonus)
+        private campaignBonusRepository: Repository<Campaignbonus>,
+
+        @InjectRepository(Bonusbet)
+        private bonusBetRepository: Repository<Bonusbet>,
 
     ) {
 
@@ -46,7 +66,6 @@ export class BonusService {
     async create(data: CreateBonusRequest, bonusType : string): Promise<CreateBonusResponse> {
 
         data.bonusType = bonusType
-
 
         if(bonusType === BONUS_TYPE_FIRST_DEPOSIT) {
 
@@ -70,7 +89,7 @@ export class BonusService {
             data.minimumSelection = 0;
             data.resetIntervalType = ""
             data.minimumEntryAmount = 0
-
+            data.rolloverCount = 0
         }
 
         if(bonusType === BONUS_TYPE_REFERRAL) {
@@ -147,7 +166,7 @@ export class BonusService {
             }
         }
 
-        if (data.bonusAmount == 0) {
+        if (data.bonusAmount == 0 && data.bonusAmountMultiplier == 0) {
 
             return {
                 bonusId: 0,
@@ -184,6 +203,9 @@ export class BonusService {
         bonus.minimum_total_odds = data.minimumTotalOdds
         bonus.applicable_bet_type = data.applicableBetType
         bonus.maximum_winning = data.maximumWinning
+        bonus.rollover_count = data.rolloverCount
+        bonus.name = data.name
+        bonus.bonus_amount_multiplier = data.bonusAmountMultiplier
         bonus.status = 1
 
         bonus.minimum_lost_games = data.minimumLostGames
@@ -191,6 +213,7 @@ export class BonusService {
         bonus.reset_interval_type = data.resetIntervalType
         bonus.minimum_entry_amount = data.minimumEntryAmount
         bonus.bonus_amount = data.bonusAmount
+        bonus.minimum_betting_stake = data.minimumBettingStake
 
         try {
 
@@ -351,6 +374,10 @@ export class BonusService {
                     reset_interval_type : data.resetIntervalType,
                     minimum_entry_amount : data.minimumEntryAmount,
                     bonus_amount: data.bonusAmount,
+                    rollover_count : data.rolloverCount,
+                    name : data.name,
+                    bonus_amount_multiplier : data.bonusAmountMultiplier,
+                    minimum_betting_stake : data.minimumBettingStake,
                 }
             )
 
@@ -525,8 +552,11 @@ export class BonusService {
                     "status": b.status,
                     "created": b.created,
                     "updated": b.updated,
+                    "bonusAmountMultiplier" : b.bonus_amount_multiplier,
+                    "rolloverCount" : b.rollover_count,
+                    "name" : b.name,
+                    "minimumBettingStake": b.minimum_betting_stake,
                 }
-
 
                 res.push(obj)
             }
@@ -562,23 +592,92 @@ export class BonusService {
 
         try {
 
-            let bonus = await this.userBonusRepository.find({
-                where: {
-                    user_id: parseInt(""+data.userId),
-                    client_id: parseInt(""+data.clientId),
-                }
-            });
+            let bonus: Userbonus[]
+
+            if(data.status > 0) {
+
+                bonus = await this.userBonusRepository.find({
+                    where: {
+                        user_id: parseInt(""+data.userId),
+                        client_id: parseInt(""+data.clientId),
+                        status: data.status
+                    }
+                });
+            }
+
+            else if(data.id > 0) {
+
+                bonus = await this.userBonusRepository.find({
+                    where: {
+                        user_id: parseInt(""+data.userId),
+                        client_id: parseInt(""+data.clientId),
+                        id: data.id
+                    }
+                });
+            }
+
+            else if(data.bonusType.length > 0) {
+
+                bonus = await this.userBonusRepository.find({
+                    where: {
+                        user_id: parseInt(""+data.userId),
+                        client_id: parseInt(""+data.clientId),
+                        bonus_type: data.bonusType
+                    }
+                });
+
+            } else {
+
+                bonus = await this.userBonusRepository.find({
+                    where: {
+                        user_id: parseInt(""+data.userId),
+                        client_id: parseInt(""+data.clientId),
+                    }
+                });
+            }
 
             let b = []
 
             for(const bon of bonus) {
 
-                b.push({
-                    "bonusType": bon.bonus_type,
-                    "amount": bon.amount,
-                    "expiryDateInTimestamp": bon.expiry_date_in_timestamp,
-                    "created": bon.created
+                let usrBonus = {} as UserBonus
+                usrBonus.bonusType = bon.bonus_type
+                usrBonus.amount = bon.amount
+                usrBonus.expiryDateInTimestamp = bon.expiry_date_in_timestamp
+                usrBonus.created = bon.created
+                usrBonus.name = bon.name
+                usrBonus.rolledAmount = bon.rolled_amount
+                usrBonus.pendingAmount = bon.pending_amount
+                usrBonus.totalRolloverCount = bon.rollover_count
+                usrBonus.completedRolloverCount = bon.completed_rollover_count
+
+                // get bets
+                let bets = await this.bonusBetRepository.find({
+                    where: {
+                        user_bonus_id: bon.id
+                    }
                 })
+
+                let useBets = [] as UserBetDTO[]
+
+                for(const bet of bets) {
+
+                    let userBetDto = {} as UserBetDTO
+                    userBetDto.betId = bet.bet_id
+                    userBetDto.created = bet.created
+                    userBetDto.pendingAmount = bet.pending_amount
+                    userBetDto.rolledAmount = bet.rolled_amount
+                    userBetDto.rolloverCount = bet.rollover_count
+                    userBetDto.stake = bet.stake
+                    userBetDto.status = bet.status
+
+                    useBets.push(userBetDto)
+
+                }
+
+                usrBonus.bets = useBets
+
+                b.push(usrBonus)
             }
 
             return {
@@ -621,7 +720,7 @@ export class BonusService {
             }
         }
 
-        if (data.userId == 0) {
+        if (data.userId.length == 0) {
 
             this.logger.error("missing user ID")
 
@@ -632,7 +731,7 @@ export class BonusService {
             }
         }
 
-        if (data.amount == 0) {
+        if (data.amount == 0 || data.baseValue == 0 ) {
 
             this.logger.error("missing amount")
 
@@ -662,47 +761,73 @@ export class BonusService {
             }
         }
 
-        // check if this user bonus exists
-        let existingUserBonus = await this.userBonusRepository.findOne({
-            where: {
-                client_id: data.clientId,
-                bonus_type: data.bonusType,
-                user_id: data.userId,
-            }
-        });
-
-        if (existingUserBonus === null || existingUserBonus.id === null || existingUserBonus.id === 0) {
-
-            existingUserBonus = new Userbonus();
-            existingUserBonus.amount = 0
-        }
-
-        if(existingUserBonus.amount == null ) {
-
-            existingUserBonus.amount = 0
-        }
+        let existingUserBonus = new Userbonus();
 
         let expiry = this.getTimestampInSeconds() + (existingBonus.expiry_in_hours * 60 * 60)
 
-        existingUserBonus.user_id = data.userId
+        let bonusAmount = data.amount
+
+        if(data.baseValue > 0 ) {
+
+            bonusAmount = data.baseValue * existingBonus.bonus_amount_multiplier
+        }
+
         existingUserBonus.client_id = data.clientId
         existingUserBonus.bonus_type = data.bonusType
-        existingUserBonus.amount = parseFloat(""+existingUserBonus.amount) + parseFloat(""+data.amount);
+        existingUserBonus.amount = bonusAmount;
+        existingUserBonus.balance = bonusAmount;
         existingUserBonus.expiry_date_in_timestamp = expiry;
+        existingUserBonus.rollover_count = existingBonus.rollover_count
+        existingUserBonus.pending_amount = bonusAmount * existingBonus.rollover_count
+        existingUserBonus.rolled_amount = 0
+        existingUserBonus.completed_rollover_count = 0
+        existingUserBonus.name = existingBonus.name
 
         try {
 
-            const bonusResult = await this.userBonusRepository.save(existingUserBonus)
+            let parts = data.userId.split(",")
 
-            return {
-                status: 201,
-                description: "bonus awarded successfully",
-                bonus: {
-                    bonusType: bonusResult.bonus_type,
-                    amount: bonusResult.amount,
-                    expiryDateInTimestamp: bonusResult.expiry_date_in_timestamp,
-                    created: bonusResult.created
-                },
+            if(parts.length === 1) {
+
+                let userId = parseInt(parts[0])
+                existingUserBonus.user_id = userId
+
+                const bonusResult = await this.userBonusRepository.save(existingUserBonus)
+
+                return {
+                    status: 201,
+                    description: "bonus awarded successfully",
+                    bonus: {
+                        bonusType: bonusResult.bonus_type,
+                        amount: bonusResult.amount,
+                        expiryDateInTimestamp: bonusResult.expiry_date_in_timestamp,
+                        created: bonusResult.created
+                    },
+                }
+
+            } else {
+
+                for (const usr of parts) {
+
+                    let userId = parseInt(usr)
+                    existingUserBonus.user_id = userId
+
+                    await this.userBonusRepository.save(existingUserBonus)
+
+                }
+
+                return {
+                    status: 201,
+                    description: "bonus awarded successfully",
+                    bonus: {
+                        bonusType: existingUserBonus.bonus_type,
+                        amount: existingUserBonus.amount,
+                        expiryDateInTimestamp: existingUserBonus.expiry_date_in_timestamp,
+                        created: existingUserBonus.created
+                    },
+                }
+
+
             }
 
         } catch (e) {
@@ -717,403 +842,370 @@ export class BonusService {
         }
     }
 
-    async hasBonusBet(data: UserBet): Promise<HasBonusResponse> {
+    async createCampaignBonus(data: CreateCampaignBonusDto): Promise<CreateBonusResponse> {
 
         // validations
         if (data.clientId == 0) {
 
             return {
+                bonusId: 0,
                 status: 401,
-                description: "missing clientID",
-                bonus: null
+                description: "missing client ID"
             }
         }
 
-        if (data.userId == 0) {
+        if (data.bonusCode.length == 0 ) {
 
             return {
+                bonusId: 0,
                 status: 401,
-                description: "missing userID",
-                bonus: null
+                description: "missing bonus code"
             }
         }
 
-        if (data.betslip.length == 0) {
+        if (data.name.length == 0 ) {
 
             return {
+                bonusId: 0,
                 status: 401,
-                description: "missing slips",
-                bonus: null
+                description: "missing bonus name"
             }
         }
 
-        let existingBonus = new Bonus()
-        let existingUserBonus = new Userbonus()
-
-        if(data.bonusType.length > 0 ) {
-
-            // check if this bonus exists
-            existingBonus = await this.bonusRepository.findOne({
-                where: {
-                    client_id: data.clientId,
-                    bonus_type: data.bonusType,
-                    status: 1
-                }
-            });
-
-            if (existingBonus === null || existingBonus.id === null || existingBonus.id === 0) {
-
-                this.logger.error("Bonus type does not exist")
-
-                return {
-                    status: 401,
-                    description: "bonus type does not exist",
-                    bonus: null
-                }
-
-            }
-
-            // check if this user has the supplied bonus
-            let existingUserBonus = await this.userBonusRepository.findOne({
-                where: {
-                    client_id: data.clientId,
-                    bonus_type: data.bonusType,
-                    user_id: data.userId,
-                }
-            });
-
-            if (existingUserBonus === null || existingUserBonus.id === null || existingUserBonus.id === 0) {
-
-                return {
-                    status: 401,
-                    description: "bonus type does not exist",
-                    bonus: null
-                }
-
-            }
-        }
-
-        if(data.bonusType.length === 0 || existingUserBonus.id === 0 ) {
-
-            // check if this user bonus exists
-            existingUserBonus = await this.userBonusRepository.findOne({
-                where: {
-                    client_id: data.clientId,
-                    amount: MoreThanOrEqual(data.stake),
-                    user_id: data.userId,
-                    expiry_date_in_timestamp: MoreThanOrEqual(this.getTimestampInSeconds())
-                },
-                order: {
-                    amount: "DESC",
-                },
-            });
-        }
-
-        if (existingUserBonus === null || existingUserBonus.id === null || existingUserBonus.id === 0) {
+        if (data.expiryDate.length == 0 ) {
 
             return {
+                bonusId: 0,
                 status: 401,
-                description: "bonus type does not exist",
-                bonus: null
+                description: "missing bonus expiry date"
             }
-
         }
 
-        if(existingUserBonus.expiry_date_in_timestamp < this.getTimestampInSeconds()) {
+        // check if this bonus exists
+
+        let existingBonus = await this.campaignBonusRepository.findOne({
+            where: {
+                client_id: data.clientId,
+                bonus_code: data.bonusCode,
+            }
+        });
+
+        if (existingBonus !== null && existingBonus.id !== null && existingBonus.id > 0) {
 
             return {
+                bonusId: existingBonus.id,
                 status: 401,
-                description: "bonus has expired",
-                bonus: null
+                description: "Bonus code exists"
             }
-
         }
 
-        if(existingBonus.id == 0 ) {
+        let bonus = new Campaignbonus();
+        bonus.bonus_code = data.bonusCode
+        bonus.client_id = data.clientId
+        bonus.bonus_id = data.bonusId
+        bonus.expiry_date = data.expiryDate
+        bonus.name = data.name
 
-            // check if this bonus exists
-            existingBonus = await this.bonusRepository.findOne({
-                where: {
-                    client_id: data.clientId,
-                    bonus_type: existingUserBonus.bonus_type,
-                    status: 1
-                }
-            });
+        try {
 
-            if (existingBonus === null || existingBonus.id === null || existingBonus.id === 0) {
-
-                this.logger.error("Bonus type does not exist")
-
-                return {
-                    status: 401,
-                    description: "bonus type does not exist",
-                    bonus: null
-                }
-
-            }
-
-        }
-
-        // check if user qualifies for bonus
-
-        if(existingBonus.minimum_events < data.betslip.length) {
-
-            this.logger.error("minimum_events rule violated")
+            const bonusResult = await this.campaignBonusRepository.save(bonus)
 
             return {
-                status: 401,
-                description: "You need atleast "+existingBonus.minimum_events+" events to use this bonus",
-                bonus: null
+                bonusId: bonusResult.id,
+                status: 201,
+                description: "campaign bonus created successfully",
             }
-        }
 
-        if(existingBonus.minimum_total_odds > 0 && existingBonus.minimum_total_odds < data.totalOdds) {
+        } catch (e) {
 
-            this.logger.error("minimum_total_odds rule violated")
-
-            return {
-                status: 401,
-                description: "You need atleast total odds of "+existingBonus.minimum_total_odds+" to use this bonus",
-                bonus: null
-            }
-        }
-
-        for(const slips of data.betslip) {
-
-            if(existingBonus.minimum_odds_per_event > 0 && existingBonus.minimum_odds_per_event < slips.odds) {
-
-                this.logger.error("minimum_odds_per_event rule violated")
-
-                return {
-                    status: 401,
-                    description: "You need atleast odds of "+existingBonus.minimum_odds_per_event+" for each event to use this bonus",
-                    bonus: null
-                }
-            }
-        }
-
-        // use qualifies for bonus
-
-        let userBonus = new Userbonus()
-        userBonus.amount = existingUserBonus.amount
-        userBonus.id = existingUserBonus.id
-        userBonus.bonus_type = existingUserBonus.bonus_type
-        userBonus.expiry_date_in_timestamp = existingUserBonus.expiry_date_in_timestamp
-
-        return {
-            bonus: {
-                "bonusType" : userBonus.bonus_type,
-                "amount": userBonus.amount,
-                "expiryDateInTimestamp": userBonus.expiry_date_in_timestamp,
-                "created": userBonus.created,
-            },
-            status: 200,
-            description: "User has active bonus",
+            this.logger.error(" error creating campaign bonus " + e.toString())
+            throw e
         }
     }
 
-    async debitBonusBet(data: UserBet): Promise<HasBonusResponse> {
+    async updateCampaignBonus(data: UpdateCampaignBonusDto): Promise<CreateBonusResponse> {
 
         // validations
         if (data.clientId == 0) {
 
             return {
+                bonusId: 0,
                 status: 401,
-                description: "missing clientID",
-                bonus: null
+                description: "missing client ID"
+            }
+        }
+
+        if (data.id == 0) {
+
+            return {
+                bonusId: 0,
+                status: 401,
+                description: "missing  ID"
+            }
+        }
+
+        if (data.bonusCode.length == 0 ) {
+
+            return {
+                bonusId: 0,
+                status: 401,
+                description: "missing bonus code"
+            }
+        }
+
+        if (data.name.length == 0 ) {
+
+            return {
+                bonusId: 0,
+                status: 401,
+                description: "missing bonus name"
+            }
+        }
+
+        if (data.expiryDate.length == 0 ) {
+
+            return {
+                bonusId: 0,
+                status: 401,
+                description: "missing bonus expiry date"
+            }
+        }
+
+        // check if this bonus exists
+
+        let existingBonus = await this.campaignBonusRepository.findOne({
+            where: {
+                client_id: data.clientId,
+                id: data.id,
+            }
+        });
+
+        if (existingBonus === null || existingBonus.id === null || existingBonus.id === 0) {
+
+            return {
+                bonusId: existingBonus.id,
+                status: 401,
+                description: "Bonus does not  exists"
+            }
+        }
+
+        try {
+
+             await this.campaignBonusRepository.update(
+                {
+                    id: existingBonus.id
+                },
+                {
+                    bonus_code: data.bonusCode,
+                    bonus_id: data.bonusId,
+                    expiry_date: data.expiryDate,
+                    name: data.name
+                }
+            );
+
+            return {
+                bonusId:0,
+                status: 201,
+                description: "campaign bonus updated successfully",
+            }
+
+        } catch (e) {
+
+            this.logger.error(" error updating campaign bonus " + e.toString())
+            throw e
+        }
+    }
+
+    async redeemCampaignBonus(data: RedeemCampaignBonusDto): Promise<CreateBonusResponse> {
+
+        // validations
+        if (data.clientId == 0) {
+
+            return {
+                bonusId: 0,
+                status: 401,
+                description: "missing client ID"
+            }
+        }
+
+        if (data.bonusCode.length == 0 ) {
+
+            return {
+                bonusId: 0,
+                status: 401,
+                description: "missing bonus code"
             }
         }
 
         if (data.userId == 0) {
 
             return {
+                bonusId: 0,
                 status: 401,
-                description: "missing userID",
-                bonus: null
+                description: "missing client ID"
             }
         }
 
-        if (data.betslip.length == 0) {
+        // check if this bonus exists
+
+        let existingBonus = await this.campaignBonusRepository.findOne({
+            where: {
+                client_id: data.clientId,
+                bonus_code: data.bonusCode,
+                status: 1,
+            }
+        });
+
+        if (existingBonus !== null && existingBonus.id !== null && existingBonus.id > 0) {
 
             return {
+                bonusId: existingBonus.id,
                 status: 401,
-                description: "missing slips",
-                bonus: null
+                description: "Bonus code exists or is expired"
             }
         }
 
-        let existingBonus = new Bonus()
-        let existingUserBonus = new Userbonus()
-
-        if(data.bonusType.length > 0 ) {
-
-            // check if this bonus exists
-            existingBonus = await this.bonusRepository.findOne({
-                where: {
-                    client_id: data.clientId,
-                    bonus_type: data.bonusType,
-                    status: 1
-                }
-            });
-
-            if (existingBonus === null || existingBonus.id === null || existingBonus.id === 0) {
-
-                this.logger.error("Bonus type does not exist")
-
-                return {
-                    status: 401,
-                    description: "bonus type does not exist",
-                    bonus: null
-                }
-
+        // check if user is already awarded
+        let existingUserBonus = await this.userBonusRepository.findOne({
+            where: {
+                client_id: data.clientId,
+                bonus_id: existingBonus.bonus_id,
             }
+        });
 
-            // check if this user has the supplied bonus
-            let existingUserBonus = await this.userBonusRepository.findOne({
-                where: {
-                    client_id: data.clientId,
-                    bonus_type: data.bonusType,
-                    user_id: data.userId,
-                }
-            });
-
-            if (existingUserBonus === null || existingUserBonus.id === null || existingUserBonus.id === 0) {
-
-                return {
-                    status: 401,
-                    description: "bonus type does not exist",
-                    bonus: null
-                }
-
-            }
-        }
-
-        if(data.bonusType.length === 0 || existingUserBonus.id === 0 ) {
-
-            // check if this user bonus exists
-            existingUserBonus = await this.userBonusRepository.findOne({
-                where: {
-                    client_id: data.clientId,
-                    amount: MoreThanOrEqual(data.stake),
-                    user_id: data.userId,
-                    expiry_date_in_timestamp: MoreThanOrEqual(this.getTimestampInSeconds())
-                },
-                order: {
-                    amount: "DESC",
-                },
-            });
-        }
-
-        if (existingUserBonus === null || existingUserBonus.id === null || existingUserBonus.id === 0) {
+        if (existingUserBonus !== null && existingUserBonus.id !== null && existingUserBonus.id > 0) {
 
             return {
+                bonusId: existingBonus.id,
                 status: 401,
-                description: "bonus type does not exist",
-                bonus: null
-            }
-
-        }
-
-        if(existingUserBonus.expiry_date_in_timestamp < this.getTimestampInSeconds()) {
-
-            return {
-                status: 401,
-                description: "bonus has expired",
-                bonus: null
-            }
-
-        }
-
-        if(existingBonus.id == 0 ) {
-
-            // check if this bonus exists
-            existingBonus = await this.bonusRepository.findOne({
-                where: {
-                    client_id: data.clientId,
-                    bonus_type: existingUserBonus.bonus_type,
-                    status: 1
-                }
-            });
-
-            if (existingBonus === null || existingBonus.id === null || existingBonus.id === 0) {
-
-                this.logger.error("Bonus type does not exist")
-
-                return {
-                    status: 401,
-                    description: "bonus type does not exist",
-                    bonus: null
-                }
-
-            }
-
-        }
-
-        // check if user qualifies for bonus
-
-        if(existingBonus.minimum_events < data.betslip.length) {
-
-            this.logger.error("minimum_events rule violated")
-
-            return {
-                status: 401,
-                description: "You need atleast "+existingBonus.minimum_events+" events to use this bonus",
-                bonus: null
+                description: "Bonus code already redeemed"
             }
         }
 
-        if(existingBonus.minimum_total_odds > 0 && existingBonus.minimum_total_odds < data.totalOdds) {
 
-            this.logger.error("minimum_total_odds rule violated")
+        // award bonus
+        let request = {} as AwardBonusRequest
+        request.userId = ""+data.userId
+        request.clientId = data.clientId
+        request.bonusId = existingBonus.bonus_id
 
-            return {
-                status: 401,
-                description: "You need atleast total odds of "+existingBonus.minimum_total_odds+" to use this bonus",
-                bonus: null
-            }
-        }
-
-        for(const slips of data.betslip) {
-
-            if(existingBonus.minimum_odds_per_event > 0 && existingBonus.minimum_odds_per_event < slips.odds) {
-
-                this.logger.error("minimum_odds_per_event rule violated")
-
-                return {
-                    status: 401,
-                    description: "You need atleast odds of "+existingBonus.minimum_odds_per_event+" for each event to use this bonus",
-                    bonus: null
-                }
-            }
-        }
-
-        // use qualifies for bonus
-
-        // deduct bonus
-        await this.userBonusRepository.update(
-            {
-                id: existingUserBonus.id,
-            },
-            {
-                amount: existingUserBonus.amount - data.stake,
-            });
-
-        let userBonus = new Userbonus()
-        userBonus.amount = data.stake
-        userBonus.id = existingUserBonus.id
-        userBonus.bonus_type = existingUserBonus.bonus_type
-        userBonus.expiry_date_in_timestamp = existingUserBonus.expiry_date_in_timestamp
-
+        let res = await this.awardBonus(request)
 
         return {
-            bonus: {
-                "bonusType" : userBonus.bonus_type,
-                "amount": existingUserBonus.amount - data.stake,
-                "expiryDateInTimestamp": userBonus.expiry_date_in_timestamp,
-                "created": userBonus.created,
-            },
-            status: 201,
-            description: "Bonus debited successfully",
+            bonusId: res.bonus,
+            status: res.status,
+            description: res.description,
+        }
+    }
+
+    async deleteCampaignBonus(data: DeleteCampaignBonusDto): Promise<CreateBonusResponse> {
+
+        // validations
+        if (data.clientId == 0) {
+
+            return {
+                bonusId: 0,
+                status: 401,
+                description: "missing client ID"
+            }
+        }
+
+        if (data.id == 0) {
+
+            return {
+                bonusId: 0,
+                status: 401,
+                description: "missing bonus ID"
+            }
+        }
+
+        try {
+
+            // delete bonus
+            await this.campaignBonusRepository.delete({
+                client_id: data.clientId,
+                id: data.id,
+            });
+
+
+            return {
+                bonusId: 0,
+                status: 201,
+                description: "campaign bonus deleted successfully",
+            }
+
+        } catch (e) {
+
+            this.logger.error(" error deleting campaign bonus " + e.toString())
+            throw e
+        }
+    }
+
+    async getCampaignBonus(data: GetBonusByClientID): Promise<AllCampaignBonus> {
+
+        // validations
+        if (data.clientId == 0) {
+
+            return {
+                bonus: []
+            }
+        }
+
+        try {
+
+            // delete bonus
+            let campaigns = await this.campaignBonusRepository.find({
+                where:{
+                client_id: data.clientId,
+            }});
+
+            let res = []
+
+            for(const campaign of campaigns) {
+
+                let bonus = await this.bonusRepository.findOne({
+                    where:{
+                        id: campaign.bonus_id,
+                    }});
+
+                let bon = {} as CreateBonusRequest
+                bon.id = bonus.id
+                bon.clientId = bonus.client_id
+                bon.bonusType = bonus.bonus_type
+                bon.minimumStake = bonus.minimum_stake
+                bon.expiryInHours = bonus.expiry_in_hours
+                bon.minimumEvents = bonus.minimum_events
+                bon.minimumOddsPerEvent = bonus.minimum_odds_per_event
+                bon.minimumTotalOdds = bonus.minimum_total_odds
+                bon.applicableBetType = bonus.applicable_bet_type
+                bon.maximumWinning = bonus.maximum_winning
+                bon.minimumLostGames = bonus.minimum_lost_games
+                bon.minimumSelection = bonus.minimum_selection
+                bon.minimumEntryAmount = bonus.minimum_entry_amount
+                bon.bonusAmount = bonus.bonus_amount
+                bon.bonusAmountMultiplier = bonus.id
+                bon.rolloverCount = bonus.rollover_count
+                bon.name = bonus.name
+                bon.minimumBettingStake = bonus.minimum_betting_stake
+
+                let camp = {} as CampaignBonusData
+                camp.id = campaign.id
+                camp.bonusCode = campaign.bonus_code
+                camp.clientId = campaign.client_id
+                camp.name = campaign.name
+                camp.expiryDate = campaign.expiry_date
+                camp.bonus = bon
+                res.push(camp)
+            }
+
+            return {
+                bonus: res,
+            }
+
+        } catch (e) {
+
+            this.logger.error(" error getting campaign bonus " + e.toString())
+            throw e
         }
     }
 
