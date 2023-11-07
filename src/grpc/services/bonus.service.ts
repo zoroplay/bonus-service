@@ -698,7 +698,7 @@ export class BonusService {
     async awardBonus(data: AwardBonusRequest): Promise<UserBonusResponse> {
 
         // validations
-        if (data.clientId == 0) {
+        if (data.clientId == 0 || data.bonusId == 0) {
 
             this.logger.error("missing clientID")
 
@@ -709,7 +709,7 @@ export class BonusService {
             }
         }
 
-        if (data.bonusType.length == 0) {
+        if (data.bonusType.length == 0 || data.bonusId == 0) {
 
             this.logger.error("missing bonus type")
 
@@ -742,13 +742,27 @@ export class BonusService {
             }
         }
 
+        let existingBonus : Bonus
+
         // check if this bonus exists
-        let existingBonus = await this.bonusRepository.findOne({
-            where: {
-                client_id: data.clientId,
-                bonus_type: data.bonusType,
-            }
-        });
+        if(data.clientId > 0 && data.bonusType.length > 0 ) {
+
+            existingBonus = await this.bonusRepository.findOne({
+                where: {
+                    client_id: data.clientId,
+                    bonus_type: data.bonusType,
+                }
+            });
+
+        } else if(data.bonusId > 1 ) {
+
+            existingBonus = await this.bonusRepository.findOne({
+                where: {
+                    id: data.bonusId,
+                }
+            });
+
+        }
 
         if (existingBonus === null || existingBonus.id === null || existingBonus.id === 0) {
 
