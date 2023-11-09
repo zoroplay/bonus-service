@@ -43,6 +43,7 @@ import {
     RedeemCampaignBonusDto,
     UpdateCampaignBonusDto
 } from "./interfaces/campaign.bonus.interface";
+import { CreateNewBonusRequest } from "./interfaces/create.new.bonus.request";
 
 @Controller()
 export class GrpcController implements OnModuleInit  {
@@ -82,10 +83,17 @@ export class GrpcController implements OnModuleInit  {
 
     }
 
-    @GrpcMethod('BonusService', 'CreateCashbackBonus')
-    CreateCashbackBonus(data: CreateBonusRequest): Promise<CreateBonusResponse> {
+    // @GrpcMethod('BonusService', 'CreateCashbackBonus')
+    // CreateCashbackBonus(data: CreateBonusRequest): Promise<CreateBonusResponse> {
 
-        return this.bonusService.create(data,BONUS_TYPE_CASHBACK)
+    //     return this.bonusService.create(data,BONUS_TYPE_CASHBACK)
+
+    // }
+
+    @GrpcMethod('BonusService', 'CreateBonus')
+    CreateBonus(data: CreateNewBonusRequest): Promise<CreateBonusResponse> {
+
+        return this.bonusService.createbonus(data)
 
     }
 
