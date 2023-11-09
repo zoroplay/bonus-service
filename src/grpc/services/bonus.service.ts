@@ -33,6 +33,7 @@ import {
 import {Campaignbonus} from "../../entity/campaignbonus.entity";
 import any = jasmine.any;
 import {Bonusbet} from "../../entity/bonusbet.entity";
+import { CreateNewBonusRequest } from "../interfaces/create.new.bonus.request";
 
 export class BonusService {
 
@@ -63,157 +64,26 @@ export class BonusService {
         return Math.floor(Date.now() / 1000)
     }
 
-    async create(data: CreateBonusRequest, bonusType : string): Promise<CreateBonusResponse> {
+    async createbonus(data: CreateNewBonusRequest): Promise<CreateBonusResponse> {
 
-        data.bonusType = bonusType
-
-        if(bonusType === BONUS_TYPE_FIRST_DEPOSIT) {
-
-            if (data.minimumEntryAmount < 1) {
-
-                return {
-                    bonusId: 0,
-                    status: 401,
-                    description: "missing minimum entry amount"
-                }
-            }
-            data.minimumLostGames = 0;
-            data.minimumSelection = 0;
-
-        }
-
-        if(bonusType === BONUS_TYPE_FREEBET) {
-
-            // no specific conditions
-            data.minimumLostGames = 0;
-            data.minimumSelection = 0;
-            data.resetIntervalType = ""
-            data.minimumEntryAmount = 0
-            data.rolloverCount = 0
-        }
-
-        if(bonusType === BONUS_TYPE_REFERRAL) {
-
-            if (data.minimumEntryAmount < 1) {
-
-                return {
-                    bonusId: 0,
-                    status: 401,
-                    description: "missing minimum entry amount"
-                }
-            }
-            data.minimumLostGames = 0;
-            data.minimumSelection = 0;
-            data.resetIntervalType = ""
-
-        }
-
-        if(bonusType === BONUS_TYPE_SHARE_BET) {
-
-            if (data.minimumEntryAmount < 1) {
-
-                return {
-                    bonusId: 0,
-                    status: 401,
-                    description: "missing minimum entry amount"
-                }
-            }
-            data.minimumLostGames = 0;
-            data.minimumSelection = 0;
-            data.resetIntervalType = ""
-
-        }
-
-        if(bonusType === BONUS_TYPE_CASHBACK) {
-
-            if (data.minimumEntryAmount < 1) {
-
-                return {
-                    bonusId: 0,
-                    status: 401,
-                    description: "missing minimum entry amount"
-                }
-            }
-
-            if (data.minimumSelection < 1) {
-
-                return {
-                    bonusId: 0,
-                    status: 401,
-                    description: "missing minimum selections"
-                }
-            }
-
-            if (data.minimumLostGames < 1) {
-
-                return {
-                    bonusId: 0,
-                    status: 401,
-                    description: "missing minimum lost games"
-                }
-            }
-
-            data.resetIntervalType = ""
-        }
-
-        // validations
-        if (data.clientId == 0) {
-
-            return {
-                bonusId: 0,
-                status: 401,
-                description: "missing client ID"
-            }
-        }
-
-        if (data.bonusAmount == 0 && data.bonusAmountMultiplier == 0) {
-
-            return {
-                bonusId: 0,
-                status: 401,
-                description: "missing bonus amount"
-            }
-        }
-
-        // check if this bonus exists
-
-        let existingBonus = await this.bonusRepository.findOne({
-            where: {
-                client_id: data.clientId,
-                bonus_type: data.bonusType,
-            }
-        });
-
-        if (existingBonus !== null && existingBonus.id !== null && existingBonus.id > 0) {
-
-            return {
-                bonusId: existingBonus.id,
-                status: 401,
-                description: "Bonus type exists"
-            }
-        }
 
         let bonus = new Bonus();
-        bonus.bonus_type = data.bonusType
-        bonus.client_id = data.clientId
-        bonus.minimum_stake = data.minimumStake
-        bonus.expiry_in_hours = data.expiryInHours
-        bonus.minimum_events = data.minimumEvents
-        bonus.minimum_odds_per_event = data.minimumOddsPerEvent
-        bonus.minimum_total_odds = data.minimumTotalOdds
-        bonus.applicable_bet_type = data.applicableBetType
-        bonus.maximum_winning = data.maximumWinning
-        bonus.rollover_count = data.rolloverCount
-        bonus.name = data.name
-        bonus.bonus_amount_multiplier = data.bonusAmountMultiplier
-        bonus.status = 1
-
-        bonus.minimum_lost_games = data.minimumLostGames
-        bonus.minimum_selection = data.minimumSelection
-        bonus.reset_interval_type = data.resetIntervalType
-        bonus.minimum_entry_amount = data.minimumEntryAmount
-        bonus.bonus_amount = data.bonusAmount
-        bonus.minimum_betting_stake = data.minimumBettingStake
+            bonus.bonus_type = data.bonusType
+            bonus.client_id = data.clientId
+            bonus.bonusCode = data.bonusCode
+            bonus.bonus_amount = data.bonusAmount
+            bonus.bonus_category = data.bonusCategory
+            bonus.bonus_type = data.bonusType
+            bonus.max_value = data.maxValue
+            bonus.sport_percentage = data.sportPercentage
+            bonus.casino_percentage = data.casinoPercentage
+            bonus.virtual_percentage = data.virtualPercentage
+            bonus.no_of_casino_rollover = data.noOfCasinoRollover
+            bonus.no_of_sport_rollover = data.noOfSportRollover    
+            bonus.no_of_virtual_rollover = data.noOfVirtualRollover
+            bonus.name = data.bonusName
+            bonus.duration = data.duration
+           
 
         try {
 
@@ -231,6 +101,174 @@ export class BonusService {
             throw e
         }
     }
+    // async create(data: CreateBonusRequest, bonusType : string): Promise<CreateBonusResponse> {
+
+    //     data.bonusType = bonusType
+
+    //     if(bonusType === BONUS_TYPE_FIRST_DEPOSIT) {
+
+    //         if (data.minimumEntryAmount < 1) {
+
+    //             return {
+    //                 bonusId: 0,
+    //                 status: 401,
+    //                 description: "missing minimum entry amount"
+    //             }
+    //         }
+    //         data.minimumLostGames = 0;
+    //         data.minimumSelection = 0;
+
+    //     }
+
+    //     if(bonusType === BONUS_TYPE_FREEBET) {
+
+    //         // no specific conditions
+    //         data.minimumLostGames = 0;
+    //         data.minimumSelection = 0;
+    //         data.resetIntervalType = ""
+    //         data.minimumEntryAmount = 0
+    //         data.rolloverCount = 0
+    //     }
+
+    //     if(bonusType === BONUS_TYPE_REFERRAL) {
+
+    //         if (data.minimumEntryAmount < 1) {
+
+    //             return {
+    //                 bonusId: 0,
+    //                 status: 401,
+    //                 description: "missing minimum entry amount"
+    //             }
+    //         }
+    //         data.minimumLostGames = 0;
+    //         data.minimumSelection = 0;
+    //         data.resetIntervalType = ""
+
+    //     }
+
+    //     if(bonusType === BONUS_TYPE_SHARE_BET) {
+
+    //         if (data.minimumEntryAmount < 1) {
+
+    //             return {
+    //                 bonusId: 0,
+    //                 status: 401,
+    //                 description: "missing minimum entry amount"
+    //             }
+    //         }
+    //         data.minimumLostGames = 0;
+    //         data.minimumSelection = 0;
+    //         data.resetIntervalType = ""
+
+    //     }
+
+    //     if(bonusType === BONUS_TYPE_CASHBACK) {
+
+    //         if (data.minimumEntryAmount < 1) {
+
+    //             return {
+    //                 bonusId: 0,
+    //                 status: 401,
+    //                 description: "missing minimum entry amount"
+    //             }
+    //         }
+
+    //         if (data.minimumSelection < 1) {
+
+    //             return {
+    //                 bonusId: 0,
+    //                 status: 401,
+    //                 description: "missing minimum selections"
+    //             }
+    //         }
+
+    //         if (data.minimumLostGames < 1) {
+
+    //             return {
+    //                 bonusId: 0,
+    //                 status: 401,
+    //                 description: "missing minimum lost games"
+    //             }
+    //         }
+
+    //         data.resetIntervalType = ""
+    //     }
+
+    //     // validations
+    //     if (data.clientId == 0) {
+
+    //         return {
+    //             bonusId: 0,
+    //             status: 401,
+    //             description: "missing client ID"
+    //         }
+    //     }
+
+    //     if (data.bonusAmount == 0 && data.bonusAmountMultiplier == 0) {
+
+    //         return {
+    //             bonusId: 0,
+    //             status: 401,
+    //             description: "missing bonus amount"
+    //         }
+    //     }
+
+    //     // check if this bonus exists
+
+    //     let existingBonus = await this.bonusRepository.findOne({
+    //         where: {
+    //             client_id: data.clientId,
+    //             bonus_type: data.bonusType,
+    //         }
+    //     });
+
+    //     if (existingBonus !== null && existingBonus.id !== null && existingBonus.id > 0) {
+
+    //         return {
+    //             bonusId: existingBonus.id,
+    //             status: 401,
+    //             description: "Bonus type exists"
+    //         }
+    //     }
+
+    //     let bonus = new Bonus();
+    //     bonus.bonus_type = data.bonusType
+    //     bonus.client_id = data.clientId
+    //     bonus.minimum_stake = data.minimumStake
+    //     bonus.expiry_in_hours = data.expiryInHours
+    //     bonus.minimum_events = data.minimumEvents
+    //     bonus.minimum_odds_per_event = data.minimumOddsPerEvent
+    //     bonus.minimum_total_odds = data.minimumTotalOdds
+    //     bonus.applicable_bet_type = data.applicableBetType
+    //     bonus.maximum_winning = data.maximumWinning
+    //     bonus.rollover_count = data.rolloverCount
+    //     bonus.name = data.name
+    //     bonus.bonus_amount_multiplier = data.bonusAmountMultiplier
+    //     bonus.status = 1
+
+    //     bonus.minimum_lost_games = data.minimumLostGames
+    //     bonus.minimum_selection = data.minimumSelection
+    //     bonus.reset_interval_type = data.resetIntervalType
+    //     bonus.minimum_entry_amount = data.minimumEntryAmount
+    //     bonus.bonus_amount = data.bonusAmount
+    //     bonus.minimum_betting_stake = data.minimumBettingStake
+
+    //     try {
+
+    //         const bonusResult = await this.bonusRepository.save(bonus)
+
+    //         return {
+    //             bonusId: bonusResult.id,
+    //             status: 201,
+    //             description: "Bonus created successfully",
+    //         }
+
+    //     } catch (e) {
+
+    //         this.logger.error(" error creating bonus " + e.toString())
+    //         throw e
+    //     }
+    // }
 
     async update(data: CreateBonusRequest, bonusType : string): Promise<CreateBonusResponse> {
 

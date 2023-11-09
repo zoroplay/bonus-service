@@ -16,20 +16,21 @@ export class Bonus {
     name: string;
 
     @Index()
-    @Column({ type: "int", default: "0" })
-    status: number;
+    @Column({ type: "varchar", length: 100, nullable: false })
+    target: string;
 
     @Index()
-    @Column({ type: "int", default: "0" })
-    rollover_count: number;
+    @Column({ type: "varchar", length: 100, nullable: true})
+    bonusCode: string;
 
     @Index()
     @Column({ type: "varchar", length: 100, nullable: false })
     bonus_type: string;
 
     @Index()
-    @Column({ type: "decimal", precision: 20, scale: 2, nullable: true, default: 0 })
-    minimum_entry_amount: number;
+    @Column({ type: "varchar", length: 100, nullable: false  })
+    bonus_category: string;
+
 
     @Index()
     @Column({ type: "decimal", precision: 20, scale: 2, nullable: true, default: 0 })
@@ -37,51 +38,35 @@ export class Bonus {
 
     @Index()
     @Column({ type: "int", default: "0" })
-    bonus_amount_multiplier: number;
+    max_value: number;
 
     @Index()
-    @Column({ type: "decimal", precision: 20, scale: 2, nullable: true, default: 0 })
-    minimum_stake: number;
+    @Column({ type: "varchar", length: 100, nullable: false  })
+    sport_percentage: string;
 
     @Index()
-    @Column({ type: "int", default: "24" })
-    expiry_in_hours: number;
+    @Column({ type: "varchar", length: 100, nullable: false  })
+    casino_percentage: string;
 
     @Index()
-    @Column({ type: "int", default: "3" })
-    minimum_events: number;
+    @Column({ type: "varchar", length: 100, nullable: false  })
+    virtual_percentage: string;
 
     @Index()
-    @Column({ type: "decimal", precision: 20, scale: 2, nullable: false,default: "0"  })
-    minimum_odds_per_event: number;
+    @Column({ type: "varchar", length: 100, nullable: false  })
+    no_of_sport_rollover: string;
 
     @Index()
-    @Column({ type: "decimal", precision: 20, scale: 2, nullable: false,default: "0"  })
-    minimum_total_odds: number;
+    @Column({ ttype: "varchar", length: 100, nullable: false  })
+    no_of_casino_rollover: string;
 
     @Index()
-    @Column({ type: "varchar", length: 100, nullable: false,default: "0"  })
-    applicable_bet_type: string;
+    @Column({ type: "varchar", length: 100, nullable: false  })
+    no_of_virtual_rollover: string;
 
     @Index()
-    @Column({ type: "decimal", precision: 20, scale: 2, nullable: false, default: 0 })
-    maximum_winning: number;
-
-    @Index()
-    @Column({ type: "varchar", length: 100, nullable: true,default: ""  })
-    reset_interval_type: string;
-
-    @Index()
-    @Column({ type: "int", default: "0" })
-    minimum_selection: number;
-
-    @Index()
-    @Column({ type: "int", default: "0" })
-    minimum_lost_games: number;
-
-    @Index()
-    @Column({ type: "int", default: "0" })
-    minimum_betting_stake: number;
+    @Column({ type: "varchar", length: 100, nullable: false })
+    duration: string;
 
     @Index()
     @CreateDateColumn()
