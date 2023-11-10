@@ -66,7 +66,13 @@ export class BonusService {
 
     async createbonus(data: CreateNewBonusRequest): Promise<CreateBonusResponse> {
 
-
+        if (data.bonusType !== "All" && data.bonusType !== 'sport' && data.bonusType !== 'casino' && data.bonusType !== 'virtual') {
+            return {
+            bonusId: 0,
+            status: 401,
+            description: "Bonus Type not allowed"
+        }
+    }
         let bonus = new Bonus();
             bonus.bonus_type = data.bonusType
             bonus.client_id = data.clientId
@@ -83,6 +89,9 @@ export class BonusService {
             bonus.no_of_virtual_rollover = data.noOfVirtualRollover
             bonus.name = data.bonusName
             bonus.duration = data.duration
+            if (data.target) bonus.target = data.target
+
+          
            
 
         try {

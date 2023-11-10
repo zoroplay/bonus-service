@@ -5,8 +5,8 @@ export interface CreateNewBonusRequest {
      target :string
      bonusCategory :string
      bonusType :string
-     bonusAmount:string
-     maxValue :string
+     bonusAmount:number
+     maxValue :number
      sportPercentage :string
      casinoPercentage:string
      virtualPercentage :string
