@@ -54,11 +54,11 @@ export class GrpcController implements OnModuleInit  {
     constructor(
         private readonly bonusService: BonusService,
 
-        @Inject('FEEDS_SERVICE')
-        private readonly oddsClient: ClientGrpc,
+        // @Inject('FEEDS_SERVICE')
+        // private readonly oddsClient: ClientGrpc,
 
-        @Inject('BETTING_SERVICE')
-        private readonly client: ClientGrpc,
+        // @Inject('BETTING_SERVICE')
+        // private readonly client: ClientGrpc,
 
         @InjectRepository(Bonus)
         private bonusRepository: Repository<Bonus>,
@@ -77,156 +77,116 @@ export class GrpcController implements OnModuleInit  {
 
     onModuleInit(): any {
 
-        this.oddsService = this.oddsClient.getService<OddsService>('Odds');
-        this.bettingService = this.client.getService<BettingService>('BettingService');
+        // this.oddsService = this.oddsClient.getService<OddsService>('Odds');
+        // this.bettingService = this.client.getService<BettingService>('BettingService');
 
     }
 
     @GrpcMethod('BonusService', 'CreateCashbackBonus')
     CreateCashbackBonus(data: CreateBonusRequest): Promise<CreateBonusResponse> {
-
-        return this.bonusService.create(data,BONUS_TYPE_CASHBACK)
-
+        return this.bonusService.create(data, BONUS_TYPE_CASHBACK)
     }
 
     @GrpcMethod('BonusService', 'UpdateCashbackBonus')
     UpdateCashbackBonus(data: CreateBonusRequest): Promise<CreateBonusResponse> {
-
-        return this.bonusService.update(data,BONUS_TYPE_CASHBACK)
-
+        return this.bonusService.update(data, BONUS_TYPE_CASHBACK)
     }
 
     @GrpcMethod('BonusService', 'CreateFirstDepositBonus')
     CreateFirstDepositBonus(data: CreateBonusRequest): Promise<CreateBonusResponse> {
-
-        return this.bonusService.create(data,BONUS_TYPE_FIRST_DEPOSIT)
-
+        return this.bonusService.create(data, BONUS_TYPE_FIRST_DEPOSIT)
     }
 
     @GrpcMethod('BonusService', 'UpdateFirstDepositBonus')
     UpdateFirstDepositBonus(data: CreateBonusRequest): Promise<CreateBonusResponse> {
-
-        return this.bonusService.update(data,BONUS_TYPE_FIRST_DEPOSIT)
-
+        return this.bonusService.update(data, BONUS_TYPE_FIRST_DEPOSIT)
     }
 
     @GrpcMethod('BonusService', 'CreateFreebetBonus')
     CreateFreebetBonus(data: CreateBonusRequest): Promise<CreateBonusResponse> {
-
-        return this.bonusService.create(data,BONUS_TYPE_FREEBET)
-
+        return this.bonusService.create(data, BONUS_TYPE_FREEBET)
     }
 
     @GrpcMethod('BonusService', 'UpdateFreebetBonus')
     UpdateFreebetBonus(data: CreateBonusRequest): Promise<CreateBonusResponse> {
 
-        return this.bonusService.update(data,BONUS_TYPE_FREEBET)
+        return this.bonusService.update(data, BONUS_TYPE_FREEBET)
 
     }
 
     @GrpcMethod('BonusService', 'CreateReferralBonus')
     CreateReferralBonus(data: CreateBonusRequest): Promise<CreateBonusResponse> {
-
-        return this.bonusService.create(data,BONUS_TYPE_REFERRAL)
-
+        return this.bonusService.create(data, BONUS_TYPE_REFERRAL)
     }
 
     @GrpcMethod('BonusService', 'UpdateReferralBonus')
     UpdateReferralBonus(data: CreateBonusRequest): Promise<CreateBonusResponse> {
-
-        return this.bonusService.update(data,BONUS_TYPE_REFERRAL)
-
+        return this.bonusService.update(data, BONUS_TYPE_REFERRAL)
     }
 
     @GrpcMethod('BonusService', 'CreateShareBetBonus')
     CreateShareBetBonus(data: CreateBonusRequest): Promise<CreateBonusResponse> {
-
-        return this.bonusService.create(data,BONUS_TYPE_SHARE_BET)
-
+        return this.bonusService.create(data, BONUS_TYPE_SHARE_BET)
     }
 
     @GrpcMethod('BonusService', 'UpdateShareBetBonus')
     UpdateShareBetBonus(data: CreateBonusRequest): Promise<CreateBonusResponse> {
-
-        return this.bonusService.update(data,BONUS_TYPE_SHARE_BET)
-
+        return this.bonusService.update(data, BONUS_TYPE_SHARE_BET)
     }
 
     @GrpcMethod('BonusService', 'GetBonus')
     GetBonus(data: GetBonusRequest): Promise<GetBonusResponse> {
-
         return this.bonusService.all(data)
-
     }
 
     @GrpcMethod('BonusService', 'UpdateBonusStatus')
     UpdateBonusStatus(data: BonusStatusRequest): Promise<CreateBonusResponse> {
-
         return this.bonusService.status(data)
-
     }
 
     @GrpcMethod('BonusService', 'DeleteBonus')
     DeleteBonus(data: GetBonusRequest): Promise<DeleteBonusResponse> {
-
         return this.bonusService.delete(data)
-
     }
 
     @GrpcMethod('BonusService', 'GetUserBonus')
     GetUserBonus(data: GetUserBonusRequest): Promise<GetUserBonusResponse> {
-
         return this.bonusService.userBonus(data)
-
     }
 
     @GrpcMethod('BonusService', 'AwardBonus')
     AwardBonus(data: AwardBonusRequest): Promise<UserBonusResponse> {
-
         return this.bonusService.awardBonus(data)
-
     }
 
     @GrpcMethod('BonusService', 'PlaceBonusBet')
     PlaceBonusBet(data: UserBet): Promise<PlaceBetResponse> {
-
         return this.CreateBet(data)
-
     }
 
     @GrpcMethod('BonusService', 'CreateCampaignBonus')
     CreateCampaignBonus(data: CreateCampaignBonusDto): Promise<CreateBonusResponse> {
-
         return this.bonusService.createCampaignBonus(data)
-
     }
 
     @GrpcMethod('BonusService', 'UpdateCampaignBonus')
     UpdateCampaignBonus(data: UpdateCampaignBonusDto): Promise<CreateBonusResponse> {
-
         return this.bonusService.updateCampaignBonus(data)
-
     }
 
     @GrpcMethod('BonusService', 'DeleteCampaignBonus')
     DeleteCampaignBonus(data: DeleteCampaignBonusDto): Promise<CreateBonusResponse> {
-
         return this.bonusService.deleteCampaignBonus(data)
-
     }
 
     @GrpcMethod('BonusService', 'RedeemCampaignBonus')
     RedeemCampaignBonus(data: RedeemCampaignBonusDto): Promise<CreateBonusResponse> {
-
         return this.bonusService.redeemCampaignBonus(data)
-
     }
 
     @GrpcMethod('BonusService', 'GetCampaignBonus')
     GetCampaignBonus(data: GetBonusByClientID): Promise<AllCampaignBonus> {
-
         return this.bonusService.getCampaignBonus(data)
-
     }
 
     async CreateBet(data: UserBet): Promise<PlaceBetResponse> {
@@ -394,19 +354,21 @@ export class GrpcController implements OnModuleInit  {
                 return {status: 400, statusDescription: "missing odds in your selection ", betId: 0};
 
             // get odds
-            let odd = await this.getOdds(selection.producerId, selection.eventId, selection.marketId, selection.specifier, selection.outcomeId)
+            // let odd = await this.getOdds(selection.producerId, selection.eventId, selection.marketId, selection.specifier, selection.outcomeId)
 
-            if (odd === 0 ) { // || odd.active == 0 || odd.status !== 0 ) {
+            // if (odd === 0 ) { // || odd.active == 0 || odd.status !== 0 ) {
 
-                this.logger.info("selection suspended " + JSON.stringify(selection))
+            //     this.logger.info("selection suspended " + JSON.stringify(selection))
 
-                return {
-                    statusDescription: "Your selection " + selection.eventName + " - " + selection.marketName + " is suspended",
-                    status: 400,
-                    betId: 0
-                };
+            //     return {
+            //         statusDescription: "Your selection " + selection.eventName + " - " + selection.marketName + " is suspended",
+            //         status: 400,
+            //         betId: 0
+            //     };
 
-            }
+            // }
+
+            let odd = selection.odds;
 
             if(existingBonus.minimum_odds_per_event > 0 && existingBonus.minimum_odds_per_event < odd) {
 
@@ -478,76 +440,76 @@ export class GrpcController implements OnModuleInit  {
         betRequest.ipAddress = data.ipAddress
         betRequest.bonusId = userBonus.id
 
-        let betResponse =  await this.placeBet(betRequest).toPromise()
+        // let betResponse =  await this.placeBet(betRequest).toPromise()
 
-        if(betResponse.betId == 0 ) {
+        // if(betResponse.betId == 0 ) {
 
-            // rollback transaction
-            await this.transactionsRepository.delete({
-                id: transactionResult.id,
-            })
+        //     // rollback transaction
+        //     await this.transactionsRepository.delete({
+        //         id: transactionResult.id,
+        //     })
 
-            return {
-                betId: 0,
-                status: betResponse.status,
-                statusDescription: betResponse.statusDescription,
-            }
+        //     return {
+        //         betId: 0,
+        //         status: betResponse.status,
+        //         statusDescription: betResponse.statusDescription,
+        //     }
 
-        } else {
+        // } else {
 
-            let rollover_count = userBonus.completed_rollover_count + 1;
-            let pending_amount = userBonus.pending_amount  - data.stake;
-            let rolled_amount = userBonus.rolled_amount + data.stake;
+        //     let rollover_count = userBonus.completed_rollover_count + 1;
+        //     let pending_amount = userBonus.pending_amount  - data.stake;
+        //     let rolled_amount = userBonus.rolled_amount + data.stake;
 
-            // deduct bonus
-            await this.userBonusRepository.update(
-                {
-                    id: userBonus.id,
-                },
-                {
-                    balance: userBonus.balance - data.stake,
-                    completed_rollover_count: rollover_count,
-                    rolled_amount: rolled_amount,
-                    pending_amount: pending_amount,
-                    used_amount: userBonus.used_amount + data.stake,
-                });
+        //     // deduct bonus
+        //     await this.userBonusRepository.update(
+        //         {
+        //             id: userBonus.id,
+        //         },
+        //         {
+        //             balance: userBonus.balance - data.stake,
+        //             completed_rollover_count: rollover_count,
+        //             rolled_amount: rolled_amount,
+        //             pending_amount: pending_amount,
+        //             used_amount: userBonus.used_amount + data.stake,
+        //         });
 
-            // create bet
-            let bonusBet = new Bonusbet();
-            bonusBet.bet_id = betResponse.betId
-            bonusBet.user_id = data.userId
-            bonusBet.client_id = data.clientId
-            bonusBet.bonus_type = existingBonus.bonus_type
-            bonusBet.stake = data.stake
-            bonusBet.status = BET_PENDING
-            bonusBet.user_bonus_id = userBonus.id
-            bonusBet.rollover_count = rollover_count
-            bonusBet.rolled_amount = rolled_amount
-            bonusBet.pending_amount = pending_amount
-            const bonusBetResult = await this.bonusBetRepository.save(bonusBet)
-            return {
-                betId: betResponse.betId,
-                status: 200,
-                statusDescription: "Bet placed successfully",
-            }
+        //     // create bet
+        //     let bonusBet = new Bonusbet();
+        //     bonusBet.bet_id = betResponse.betId
+        //     bonusBet.user_id = data.userId
+        //     bonusBet.client_id = data.clientId
+        //     bonusBet.bonus_type = existingBonus.bonus_type
+        //     bonusBet.stake = data.stake
+        //     bonusBet.status = BET_PENDING
+        //     bonusBet.user_bonus_id = userBonus.id
+        //     bonusBet.rollover_count = rollover_count
+        //     bonusBet.rolled_amount = rolled_amount
+        //     bonusBet.pending_amount = pending_amount
+        //     const bonusBetResult = await this.bonusBetRepository.save(bonusBet)
+        //     return {
+        //         betId: betResponse.betId,
+        //         status: 200,
+        //         statusDescription: "Bet placed successfully",
+        //     }
 
-        }
+        // }
 
     }
 
-    getProducerStatus(producerID: number): Observable<ProducerstatusreplyInterface> {
+    getProducerStatus(producerID: number) {
 
-        return this.oddsService.GetProducerStatus({producer: producerID})
+        // return this.oddsService.GetProducerStatus({producer: producerID})
     }
 
-    getOddsStatus(data: GetOddsRequest ): Observable<GetOddsReply>  {
+    getOddsStatus(data: GetOddsRequest ) {
 
-        return this.oddsService.GetOdds(data)
+        // return this.oddsService.GetOdds(data)
     }
 
-    placeBet(data: PlaceBetRequest ): Observable<PlaceBetResponse>  {
+    placeBet(data: PlaceBetRequest )  {
 
-        return this.bettingService.placeBet(data)
+        // return this.bettingService.placeBet(data)
     }
 
     async getOdds(producerId: number, eventId: number, marketId: number, specifier: string, outcomeId: string): Promise<number> {
@@ -555,13 +517,13 @@ export class GrpcController implements OnModuleInit  {
         if(producerId !== 3 ) {
 
             // check producer id
-            let producerStatus = await this.getProducerStatus(producerId).toPromise()
+            // let producerStatus = await this.getProducerStatus(producerId).toPromise()
 
-            if (producerStatus.status === 0) {
+            // if (producerStatus.status === 0) {
 
-                this.logger.error("Producer " + producerId + " | status " + producerStatus.status)
-                return 0;
-            }
+            //     this.logger.error("Producer " + producerId + " | status " + producerStatus.status)
+            //     return 0;
+            // }
 
         }
 
@@ -575,7 +537,7 @@ export class GrpcController implements OnModuleInit  {
 
         let vm = this;
 
-        let oddStatus =  await this.getOddsStatus(odds).toPromise()
+        let oddStatus: any = {} //await this.getOddsStatus(odds).toPromise()
 
         this.logger.info(oddStatus)
 

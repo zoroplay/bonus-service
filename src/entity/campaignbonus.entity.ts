@@ -29,7 +29,11 @@ export class Campaignbonus {
 
     @Index()
     @Column({ type: "date" })
-    expiry_date: string;
+    start_date: string;
+
+    @Index()
+    @Column({ type: "date" })
+    end_date: string;
 
     @Index()
     @CreateDateColumn()

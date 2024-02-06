@@ -9,16 +9,17 @@
     "build": "nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "start": "nest start",
-    "start:dev": "DB_TYPE=mysql  DB_HOST=127.0.0.1  DB_PORT=3306  DB_PASSWORD=  DB_USERNAME=root  DB_NAME=bonus_service  SYSTEM_PORT=9000  SYSTEM_HOST=0.0.0.0  DEBUG=1  RABITTMQ_URI=amqp://bs:betting@137.184.222.24:5672/sportsbook  FEEDS_SERVICE_GRPC_URI=161.35.104.145:6011 BETTING_SERVICE_GRPC_HOST=0.0.0.0 BETTING_SERVICE_GRPC_PORT=3001 nest start --debug --watch",
-    "start:debug": "DB_TYPE=mysql  DB_HOST=127.0.0.1  DB_PORT=3306  DB_PASSWORD=  DB_USERNAME=root  DB_NAME=bonus_service  SYSTEM_PORT=9000  SYSTEM_HOST=0.0.0.0  DEBUG=1  RABITTMQ_URI=amqp://bs:betting@137.184.222.24:5672/sportsbook  FEEDS_SERVICE_GRPC_URI=161.35.104.145:6011 nest start --watch",
-    "start:debug1": "nest start --debug --watch",
+    "start:dev": "nest start --debug --watch",
     "start:prod": "node dist/main",
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
     "test": "jest",
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
-    "test:e2e": "jest --config ./test/jest-e2e.json"
+    "test:e2e": "jest --config ./test/jest-e2e.json",
+    "proto:install": "npm i git+https://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:x-oauth-basic@github.com/zoroplay/sbe-service-proto.git",
+    "proto:betting": "protoc --plugin=node_modules/.bin/protoc-gen-ts_proto -I=./node_modules/sbe-service-proto/proto --ts_proto_out=src/betting/ node_modules/sbe-service-proto/proto/betting.proto --ts_proto_opt=nestJs=true --ts_proto_opt=fileSuffix=.pb",
+    "proto:bonus": "protoc --plugin=node_modules/.bin/protoc-gen-ts_proto -I=./node_modules/sbe-service-proto/proto --ts_proto_out=src/bonus/ node_modules/sbe-service-proto/proto/bonus.proto --ts_proto_opt=nestJs=true --ts_proto_opt=fileSuffix=.pb"
   },
   "dependencies": {
     "@golevelup/nestjs-rabbitmq": "^4.0.0",
@@ -35,7 +36,7 @@
     "@nestjs/typeorm": "^10.0.0",
     "amqp-connection-manager": "^4.1.14",
     "amqplib": "^0.10.3",
-    "axios": "^1.5.1",
+    "axios": "^1.6.7",
     "camaro": "^6.2.1",
     "dotenv": "^16.3.1",
     "fast-xml-parser": "^4.3.2",
@@ -46,6 +47,7 @@
     "node-expat": "^2.4.0",
     "reflect-metadata": "^0.1.13",
     "rxjs": "^7.8.1",
+    "sbe-service-proto": "git+https://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:x-oauth-basic@github.com/zoroplay/sbe-service-proto.git",
     "typeorm": "^0.3.17",
     "xml2json": "^0.12.0"
   },

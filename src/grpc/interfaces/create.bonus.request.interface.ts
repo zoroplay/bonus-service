@@ -2,6 +2,7 @@ export interface CreateBonusRequest {
     id: number;
     clientId: number;
     bonusType: string;
+    product: string;
     minimumStake: number;
     expiryInHours: number;
     minimumEvents: number;

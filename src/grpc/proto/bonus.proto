@@ -4,9 +4,9 @@ package bonus;
 
 service BonusService {
 
-  rpc CreateCashbackBonus (CreateCashbackBonusRequest) returns (CreateBonusResponse){}
+  rpc CreateCashbackBonus (CreateBonusRequest) returns (CreateBonusResponse){}
 
-  rpc UpdateCashbackBonus (CreateCashbackBonusRequest) returns (CreateBonusResponse){}
+  rpc UpdateCashbackBonus (CreateBonusRequest) returns (CreateBonusResponse){}
 
   rpc CreateFirstDepositBonus (CreateFirstDepositBonusRequest) returns (CreateBonusResponse){}
 
@@ -77,7 +77,7 @@ message CreateCashbackBonusRequest {
   int32 rolloverCount = 13;
   string name = 14;
   float minimumBettingStake = 15;
-
+  string product = 16;
 }
 
 message CreateFreebetBonusRequest {
@@ -90,6 +90,7 @@ message CreateFreebetBonusRequest {
   int32 maximumWinning = 7;
   int32 bonusAmount = 8;
   float minimumBettingStake = 9;
+  string product = 10;
 }
 
 message CreateReferralBonusRequest {
@@ -106,7 +107,7 @@ message CreateReferralBonusRequest {
   int32 rolloverCount = 11;
   string name = 12;
   float minimumBettingStake = 13;
-
+  string product = 14;
 }
 
 message CreateShareBetBonusRequest {
@@ -123,6 +124,7 @@ message CreateShareBetBonusRequest {
   int32 rolloverCount = 11;
   string name = 12;
   float minimumBettingStake = 13;
+  string product = 14;
 
 }
 
@@ -144,7 +146,9 @@ message CreateBonusRequest {
   int32 bonusAmountMultiplier = 15;
   int32 rolloverCount = 16;
   string name = 17;
-  float minimumBettingStake = 18;
+  float minimumEntryAmount = 18;
+  string product = 19;
+  int32 minimumLostGames = 20;
 }
 
 message CreateBonusResponse {
@@ -278,7 +282,10 @@ message CreateCampaignBonusDto {
   string name = 2;
   string bonusCode = 3;
   int32 bonusId = 4;
-  string expiryDate = 5;
+  string startDate = 5;
+  string endDate = 6;
+  optional string affiliateIds = 7;
+  optional string trackierCampaignId = 8;
 }
 
 message UpdateCampaignBonusDto {
