@@ -3,7 +3,7 @@ import {Module} from '@nestjs/common';
 import {ConsumerService} from './consumer.service';
 import {ConsumerController} from "./consumer.controller";
 import {TypeOrmModule} from "@nestjs/typeorm";
-// import {RabbitMQChannels} from "@golevelup/nestjs-rabbitmq/lib/rabbitmq.interfaces";
+import {RabbitMQChannels} from "@golevelup/nestjs-rabbitmq/lib/rabbitmq.interfaces";
 import {Bonus} from "../entity/bonus.entity";
 import {Firstdeposit} from "../entity/firstdeposit.entity";
 import {Freebet} from "../entity/freebet.entity";
@@ -22,43 +22,43 @@ import {Transactions} from "../entity/transactions.entity";
 
 let exchanges = [];
 
-// let channels: RabbitMQChannels = {};
+let channels: RabbitMQChannels = {};
 
 let defChannel: RabbitMQChannelConfig = {
     prefetchCount: 200,
     default: true,
 }
 
-// channels['bonus_service'] = defChannel
+channels['bonus_service'] = defChannel
 
 let names = ['first_deposit','new_user','share_bet','referral','cashback']
 
-// for (const name of names) {
+for (const name of names) {
 
-//     let newName = 'bonus_service.' + name
+    let newName = 'bonus_service.' + name
 
-//     exchanges.push({
-//         name: newName,
-//         type: 'direct'
-//     })
+    exchanges.push({
+        name: newName,
+        type: 'direct'
+    })
 
-//     channels[newName] = {
-//         prefetchCount: 200,
-//     }
-// }
+    channels[newName] = {
+        prefetchCount: 200,
+    }
+}
 
 @Module({
     imports: [
         TypeOrmModule.forFeature([Bonus,Firstdeposit,Freebet,Lostbet,Referral,Sharebet,Userbonus,Cashback,Bonusbet,Campaignbonus,Transactions]),
-        // RabbitMQModule.forRoot(RabbitMQModule, {
-        //     exchanges: exchanges,
-        //     uri: process.env.RABITTMQ_URI,
-        //     channels: channels,
-        //     defaultRpcTimeout: 15000,
-        //     connectionInitOptions: {
-        //         timeout: 50000
-        //     }
-        // }),
+        RabbitMQModule.forRoot(RabbitMQModule, {
+            exchanges: exchanges,
+            uri: process.env.RABITTMQ_URI,
+            channels: channels,
+            defaultRpcTimeout: 15000,
+            connectionInitOptions: {
+                timeout: 50000
+            }
+        }),
         ConsumerModule,
     ],
     providers: [ConsumerService, BetService, DepositService, UserService,BonusService],
