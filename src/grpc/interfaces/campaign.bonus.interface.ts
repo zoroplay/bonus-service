@@ -5,7 +5,10 @@ export interface CreateCampaignBonusDto {
     name: string;
     bonusCode: string;
     bonusId: number;
-    expiryDate: string;
+    startDate: string;
+    endDate: string;
+    affiliateIds?: string;
+    trackierCampaignId?: string
 }
 
 export interface UpdateCampaignBonusDto {
@@ -14,7 +17,8 @@ export interface UpdateCampaignBonusDto {
     name: string;
     bonusCode: string;
     bonusId: number;
-    expiryDate: string;
+    startDate: string;
+    endDate: string;
 }
 
 export interface RedeemCampaignBonusDto {
@@ -34,7 +38,8 @@ export interface CampaignBonusData {
     name: string;
     bonusCode: string;
     bonus: CreateBonusRequest;
-    expiryDate: string;
+    startDate: string;
+    endDate: string;
 }
 
 export interface AllCampaignBonus {

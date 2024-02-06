@@ -22,6 +22,8 @@ import {
     BONUS_TYPE_REFERRAL,
     BONUS_TYPE_SHARE_BET, REFERENCE_TYPE_PLACEBET, TRANSACTION_TYPE_DEBIT
 } from "../../constants";
+import axios from 'axios';
+
 import {Transactions} from "../../entity/transactions.entity";
 import {
     AllCampaignBonus, CampaignBonusData,
@@ -65,6 +67,7 @@ export class BonusService {
 
     async create(data: CreateBonusRequest, bonusType : string): Promise<CreateBonusResponse> {
 
+        console.log(data)
         data.bonusType = bonusType
 
         if(bonusType === BONUS_TYPE_FIRST_DEPOSIT) {
@@ -144,14 +147,14 @@ export class BonusService {
                 }
             }
 
-            if (data.minimumLostGames < 1) {
+            // if (data.minimumLostGames < 1) {
 
-                return {
-                    bonusId: 0,
-                    status: 401,
-                    description: "missing minimum lost games"
-                }
-            }
+            //     return {
+            //         bonusId: 0,
+            //         status: 401,
+            //         description: "missing minimum lost games"
+            //     }
+            // }
 
             data.resetIntervalType = ""
         }
@@ -177,21 +180,21 @@ export class BonusService {
 
         // check if this bonus exists
 
-        let existingBonus = await this.bonusRepository.findOne({
-            where: {
-                client_id: data.clientId,
-                bonus_type: data.bonusType,
-            }
-        });
+        // let existingBonus = await this.bonusRepository.findOne({
+        //     where: {
+        //         client_id: data.clientId,
+        //         bonus_type: data.bonusType,
+        //     }
+        // });
 
-        if (existingBonus !== null && existingBonus.id !== null && existingBonus.id > 0) {
+        // if (existingBonus !== null && existingBonus.id !== null && existingBonus.id > 0) {
 
-            return {
-                bonusId: existingBonus.id,
-                status: 401,
-                description: "Bonus type exists"
-            }
-        }
+        //     return {
+        //         bonusId: existingBonus.id,
+        //         status: 401,
+        //         description: "Bonus type exists"
+        //     }
+        // }
 
         let bonus = new Bonus();
         bonus.bonus_type = data.bonusType
@@ -207,7 +210,7 @@ export class BonusService {
         bonus.name = data.name
         bonus.bonus_amount_multiplier = data.bonusAmountMultiplier
         bonus.status = 1
-
+        bonus.product = data.product
         bonus.minimum_lost_games = data.minimumLostGames
         bonus.minimum_selection = data.minimumSelection
         bonus.reset_interval_type = data.resetIntervalType
@@ -857,7 +860,6 @@ export class BonusService {
     }
 
     async createCampaignBonus(data: CreateCampaignBonusDto): Promise<CreateBonusResponse> {
-
         // validations
         if (data.clientId == 0) {
 
@@ -886,12 +888,22 @@ export class BonusService {
             }
         }
 
-        if (data.expiryDate.length == 0 ) {
+        if (data.startDate.length == 0 ) {
 
             return {
                 bonusId: 0,
                 status: 401,
-                description: "missing bonus expiry date"
+                description: "missing bonus start date"
+            }
+        }
+
+
+        if (data.endDate.length == 0 ) {
+
+            return {
+                bonusId: 0,
+                status: 401,
+                description: "missing bonus end date"
             }
         }
 
@@ -917,13 +929,24 @@ export class BonusService {
         bonus.bonus_code = data.bonusCode
         bonus.client_id = data.clientId
         bonus.bonus_id = data.bonusId
-        bonus.expiry_date = data.expiryDate
+        bonus.start_date = data.startDate
+        bonus.end_date = data.endDate
         bonus.name = data.name
 
         try {
 
             const bonusResult = await this.campaignBonusRepository.save(bonus)
-
+            if (data.affiliateIds !== ''){
+                // send campaign to trackier
+                const res = await this.createTrackierPromoCode(data);
+                if (!res.success) {
+                    return {
+                        bonusId: 0,
+                        status: 400,
+                        description: "unable to submit data to trackier"
+                    }
+                }
+            }
             return {
                 bonusId: bonusResult.id,
                 status: 201,
@@ -976,12 +999,12 @@ export class BonusService {
             }
         }
 
-        if (data.expiryDate.length == 0 ) {
+        if (data.startDate.length == 0 ) {
 
             return {
                 bonusId: 0,
                 status: 401,
-                description: "missing bonus expiry date"
+                description: "missing bonus start date"
             }
         }
 
@@ -1012,7 +1035,8 @@ export class BonusService {
                 {
                     bonus_code: data.bonusCode,
                     bonus_id: data.bonusId,
-                    expiry_date: data.expiryDate,
+                    start_date: data.startDate,
+                    end_date: data.endDate,
                     name: data.name
                 }
             );
@@ -1207,7 +1231,8 @@ export class BonusService {
                 camp.bonusCode = campaign.bonus_code
                 camp.clientId = campaign.client_id
                 camp.name = campaign.name
-                camp.expiryDate = campaign.expiry_date
+                camp.startDate = campaign.start_date
+                camp.endDate = campaign.end_date
                 camp.bonus = bon
                 res.push(camp)
             }
@@ -1221,6 +1246,60 @@ export class BonusService {
             this.logger.error(" error getting campaign bonus " + e.toString())
             throw e
         }
+    }
+
+    async createTrackierPromoCode(data: CreateCampaignBonusDto) {
+        try {
+            const bonus = await this.bonusRepository.findOne({where: {id: data.bonusId}});
+            const now = new Date();
+            const start = new Date(data.startDate);
+            let status = 'active';
+            const amount: any = bonus.bonus_amount;
+            if (start > now) status = 'future';
+
+            const payload = {
+                code: data.bonusCode,
+                campaignId: data.trackierCampaignId,
+                affiliateIds: data.affiliateIds.split(','),
+                currency: 'ngn',
+                bonus: parseFloat(amount),
+                type: 'exclusive',
+                status,
+                startDate: data.startDate,
+                endDate: data.endDate,
+            }
+
+
+            const authRes = await this.getAccessToken();
+            
+            if (!authRes.status) {
+                console.log('Error sending trackier result', authRes);
+            }
+
+            const resp = await axios.post(
+                'https://api.trackierigaming.io/coupon', payload,
+                {
+                    headers: {
+                        'x-api-key': process.env.TRACKIER_API_KEY,
+                        authorization: `BEARER ${authRes.data.accessToken}`,
+                    },
+                },
+            );
+            // console.log('trackier response ', resp.data);
+            return resp.data;
+        } catch (e) {
+            console.log('Trackier error', e.message)
+            return {success: false, message: e.emssage};
+        }
+    }
+
+    async getAccessToken() {
+        return axios.post(
+            'https://api.trackierigaming.io/oauth/access-refresh-token',
+            {
+                auth_code: process.env.TRACKIER_AUTH_CODE,
+            },
+        );
     }
 
 }

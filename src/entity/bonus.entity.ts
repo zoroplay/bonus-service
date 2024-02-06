@@ -1,7 +1,6 @@
 import {Entity, PrimaryGeneratedColumn, Column, Index, CreateDateColumn, UpdateDateColumn,} from "typeorm";
 
 @Entity()
-@Index(['client_id', 'bonus_type'], { unique: true })
 export class Bonus {
 
     @PrimaryGeneratedColumn({ type: "bigint"})
@@ -26,6 +25,10 @@ export class Bonus {
     @Index()
     @Column({ type: "varchar", length: 100, nullable: false })
     bonus_type: string;
+
+    @Index()
+    @Column({ type: "varchar", length: 100, nullable: false })
+    product: string;
 
     @Index()
     @Column({ type: "decimal", precision: 20, scale: 2, nullable: true, default: 0 })
@@ -82,6 +85,18 @@ export class Bonus {
     @Index()
     @Column({ type: "int", default: "0" })
     minimum_betting_stake: number;
+
+    // @Index()
+    // @Column({ type: "varchar", length: 100, nullable: false, default: 0  })
+    // sport_percentage: string;
+
+    // @Index()
+    // @Column({ type: "varchar", length: 100, nullable: false, default: 0  })
+    // casino_percentage: string;
+
+    // @Index()
+    // @Column({ type: "varchar", length: 100, nullable: false, default: 0  })
+    // virtual_percentage: string;
 
     @Index()
     @CreateDateColumn()
