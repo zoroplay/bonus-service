@@ -173,7 +173,7 @@ export class DepositService {
             clientId: data.client_id,
             userId: data.user_id,
             amount: bonusSettings.bonus_amount,
-            bonusType: BONUS_TYPE_FIRST_DEPOSIT,
+            // bonusType: BONUS_TYPE_FIRST_DEPOSIT,
             bonusId:0,
             baseValue: data.amount,
         })

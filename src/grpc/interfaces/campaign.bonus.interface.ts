@@ -32,6 +32,11 @@ export interface DeleteCampaignBonusDto {
     id: number;
 }
 
+export interface GetCampaignDTO {
+    clientId: number;
+    promoCode: string;
+}
+
 export interface CampaignBonusData {
     id: number;
     clientId: number;

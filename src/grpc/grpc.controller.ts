@@ -40,6 +40,7 @@ import {
     AllCampaignBonus,
     CreateCampaignBonusDto,
     DeleteCampaignBonusDto, GetBonusByClientID,
+    GetCampaignDTO,
     RedeemCampaignBonusDto,
     UpdateCampaignBonusDto
 } from "./interfaces/campaign.bonus.interface";
@@ -82,57 +83,57 @@ export class GrpcController implements OnModuleInit  {
 
     }
 
-    @GrpcMethod('BonusService', 'CreateCashbackBonus')
+    @GrpcMethod('BonusService', 'CreateBonus')
     CreateCashbackBonus(data: CreateBonusRequest): Promise<CreateBonusResponse> {
-        return this.bonusService.create(data, BONUS_TYPE_CASHBACK)
+        return this.bonusService.create(data)
     }
 
-    @GrpcMethod('BonusService', 'UpdateCashbackBonus')
+    @GrpcMethod('BonusService', 'UpdateBonus')
     UpdateCashbackBonus(data: CreateBonusRequest): Promise<CreateBonusResponse> {
-        return this.bonusService.update(data, BONUS_TYPE_CASHBACK)
+        return this.bonusService.update(data)
     }
 
-    @GrpcMethod('BonusService', 'CreateFirstDepositBonus')
-    CreateFirstDepositBonus(data: CreateBonusRequest): Promise<CreateBonusResponse> {
-        return this.bonusService.create(data, BONUS_TYPE_FIRST_DEPOSIT)
-    }
+    // @GrpcMethod('BonusService', 'CreateFirstDepositBonus')
+    // CreateFirstDepositBonus(data: CreateBonusRequest): Promise<CreateBonusResponse> {
+    //     return this.bonusService.create(data, BONUS_TYPE_FIRST_DEPOSIT)
+    // }
 
-    @GrpcMethod('BonusService', 'UpdateFirstDepositBonus')
-    UpdateFirstDepositBonus(data: CreateBonusRequest): Promise<CreateBonusResponse> {
-        return this.bonusService.update(data, BONUS_TYPE_FIRST_DEPOSIT)
-    }
+    // @GrpcMethod('BonusService', 'UpdateFirstDepositBonus')
+    // UpdateFirstDepositBonus(data: CreateBonusRequest): Promise<CreateBonusResponse> {
+    //     return this.bonusService.update(data, BONUS_TYPE_FIRST_DEPOSIT)
+    // }
 
-    @GrpcMethod('BonusService', 'CreateFreebetBonus')
-    CreateFreebetBonus(data: CreateBonusRequest): Promise<CreateBonusResponse> {
-        return this.bonusService.create(data, BONUS_TYPE_FREEBET)
-    }
+    // @GrpcMethod('BonusService', 'CreateFreebetBonus')
+    // CreateFreebetBonus(data: CreateBonusRequest): Promise<CreateBonusResponse> {
+    //     return this.bonusService.create(data, BONUS_TYPE_FREEBET)
+    // }
 
-    @GrpcMethod('BonusService', 'UpdateFreebetBonus')
-    UpdateFreebetBonus(data: CreateBonusRequest): Promise<CreateBonusResponse> {
+    // @GrpcMethod('BonusService', 'UpdateFreebetBonus')
+    // UpdateFreebetBonus(data: CreateBonusRequest): Promise<CreateBonusResponse> {
 
-        return this.bonusService.update(data, BONUS_TYPE_FREEBET)
+    //     return this.bonusService.update(data, BONUS_TYPE_FREEBET)
 
-    }
+    // }
 
-    @GrpcMethod('BonusService', 'CreateReferralBonus')
-    CreateReferralBonus(data: CreateBonusRequest): Promise<CreateBonusResponse> {
-        return this.bonusService.create(data, BONUS_TYPE_REFERRAL)
-    }
+    // @GrpcMethod('BonusService', 'CreateReferralBonus')
+    // CreateReferralBonus(data: CreateBonusRequest): Promise<CreateBonusResponse> {
+    //     return this.bonusService.create(data, BONUS_TYPE_REFERRAL)
+    // }
 
-    @GrpcMethod('BonusService', 'UpdateReferralBonus')
-    UpdateReferralBonus(data: CreateBonusRequest): Promise<CreateBonusResponse> {
-        return this.bonusService.update(data, BONUS_TYPE_REFERRAL)
-    }
+    // @GrpcMethod('BonusService', 'UpdateReferralBonus')
+    // UpdateReferralBonus(data: CreateBonusRequest): Promise<CreateBonusResponse> {
+    //     return this.bonusService.update(data, BONUS_TYPE_REFERRAL)
+    // }
 
-    @GrpcMethod('BonusService', 'CreateShareBetBonus')
-    CreateShareBetBonus(data: CreateBonusRequest): Promise<CreateBonusResponse> {
-        return this.bonusService.create(data, BONUS_TYPE_SHARE_BET)
-    }
+    // @GrpcMethod('BonusService', 'CreateShareBetBonus')
+    // CreateShareBetBonus(data: CreateBonusRequest): Promise<CreateBonusResponse> {
+    //     return this.bonusService.create(data, BONUS_TYPE_SHARE_BET)
+    // }
 
-    @GrpcMethod('BonusService', 'UpdateShareBetBonus')
-    UpdateShareBetBonus(data: CreateBonusRequest): Promise<CreateBonusResponse> {
-        return this.bonusService.update(data, BONUS_TYPE_SHARE_BET)
-    }
+    // @GrpcMethod('BonusService', 'UpdateShareBetBonus')
+    // UpdateShareBetBonus(data: CreateBonusRequest): Promise<CreateBonusResponse> {
+    //     return this.bonusService.update(data, BONUS_TYPE_SHARE_BET)
+    // }
 
     @GrpcMethod('BonusService', 'GetBonus')
     GetBonus(data: GetBonusRequest): Promise<GetBonusResponse> {
@@ -187,6 +188,11 @@ export class GrpcController implements OnModuleInit  {
     @GrpcMethod('BonusService', 'GetCampaignBonus')
     GetCampaignBonus(data: GetBonusByClientID): Promise<AllCampaignBonus> {
         return this.bonusService.getCampaignBonus(data)
+    }
+
+    @GrpcMethod('BonusService', 'GetCampaign')
+    GetCampaign(data: GetCampaignDTO): Promise<any> {
+        return this.bonusService.getCampaign(data)
     }
 
     async CreateBet(data: UserBet): Promise<PlaceBetResponse> {
@@ -498,7 +504,6 @@ export class GrpcController implements OnModuleInit  {
     }
 
     getProducerStatus(producerID: number) {
-
         // return this.oddsService.GetProducerStatus({producer: producerID})
     }
 

@@ -83,7 +83,7 @@ export class UserService {
             clientId: data.client_id,
             userId: data.user_id,
             amount: bonusSettings.bonus_amount,
-            bonusType: BONUS_TYPE_FREEBET,
+            // bonusType: BONUS_TYPE_FREEBET,
             bonusId: 0,
             baseValue: 0,
         })
@@ -150,7 +150,7 @@ export class UserService {
             clientId: data.client_id,
             userId: data.user_id,
             amount: bonusSettings.bonus_amount,
-            bonusType: BONUS_TYPE_REFERRAL,
+            // bonusType: BONUS_TYPE_REFERRAL,
             bonusId: 0,
             baseValue: data.amount
         })

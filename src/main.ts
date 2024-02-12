@@ -6,26 +6,18 @@ import {join} from "path";
 
 async function bootstrap() {
 
-  const app = await NestFactory.create(AppModule);
-
-  app.useLogger(new JsonLoggerService('Bonus service'));
-
-  const uri = `${process.env.GRPC_HOST}:${process.env.GRPC_PORT}`
-  console.log(`uri ${uri}`)
-
-
-// microservice #1
-  const microserviceGrpc = app.connectMicroservice<MicroserviceOptions>({
+  const app = await NestFactory.createMicroservice<MicroserviceOptions>(AppModule, {
     transport: Transport.GRPC,
     options: {
-      url: `${uri}`,
+      url: `${process.env.GRPC_HOST}:${process.env.GRPC_PORT}`,
       package: 'bonus',
-      protoPath: join(__dirname, './grpc/proto/bonus.proto'),
+      protoPath: join('node_modules/sbe-service-proto/proto/bonus.proto'),
     }
   });
 
-  await app.startAllMicroservices();
+  app.useLogger(new JsonLoggerService('Bonus service'));
 
-  await app.listen(3000);
+
+  await app.listen();
 }
 bootstrap();

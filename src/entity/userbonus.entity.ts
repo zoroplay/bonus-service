@@ -47,7 +47,7 @@ export class Userbonus {
     balance: number;
 
     @Index()
-    @Column({ type: "decimal", precision: 20, scale: 2, nullable: false })
+    @Column({ type: "decimal", precision: 20, scale: 2, nullable: false, default: 0 })
     used_amount: number;
 
     @Index()
@@ -61,6 +61,10 @@ export class Userbonus {
     @Index()
     @Column({ type: "bigint", default: 0})
     completed_rollover_count: number;
+
+    @Index()
+    @Column({ type: "varchar", nullable: true})
+    affiliate_id: string;
 
     @Index()
     @CreateDateColumn()

@@ -88,7 +88,7 @@ export class BetService {
             clientId: data.client_id,
             userId: ""+data.user_id,
             amount: bonusSettings.bonus_amount,
-            bonusType: BONUS_TYPE_SHARE_BET,
+            // bonusType: BONUS_TYPE_SHARE_BET,
             bonusId: 0,
             baseValue: data.stake,
         })
@@ -189,7 +189,7 @@ export class BetService {
             clientId: data.client_id,
             userId: data.user_id,
             amount: bonusSettings.bonus_amount,
-            bonusType: BONUS_TYPE_CASHBACK,
+            // bonusType: BONUS_TYPE_CASHBACK,
             bonusId: 0,
             baseValue: data.stake,
         })
