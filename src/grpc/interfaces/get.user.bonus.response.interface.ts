@@ -8,6 +8,13 @@ export interface UserBetDTO {
     created : string;
 }
 
+export interface BonusTransaction {
+    amount : number;
+    balance : number;
+    desc : string;
+    createdAt : string;
+}
+
 export interface UserBonus {
     bonusType : string;
     amount : number;
@@ -18,7 +25,8 @@ export interface UserBonus {
     pendingAmount : number;
     totalRolloverCount : number;
     completedRolloverCount : number;
-    bets: UserBetDTO[]
+    status: number;
+    transactions: BonusTransaction[]
 }
 
 export interface GetUserBonusResponse {

@@ -19,7 +19,7 @@
     "test:e2e": "jest --config ./test/jest-e2e.json",
     "proto:install": "npm i git+https://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:x-oauth-basic@github.com/zoroplay/sbe-service-proto.git",
     "proto:betting": "protoc --plugin=node_modules/.bin/protoc-gen-ts_proto -I=./node_modules/sbe-service-proto/proto --ts_proto_out=src/betting/ node_modules/sbe-service-proto/proto/betting.proto --ts_proto_opt=nestJs=true --ts_proto_opt=fileSuffix=.pb",
-    "proto:bonus": "protoc --plugin=node_modules/.bin/protoc-gen-ts_proto -I=./node_modules/sbe-service-proto/proto --ts_proto_out=src/bonus/ node_modules/sbe-service-proto/proto/bonus.proto --ts_proto_opt=nestJs=true --ts_proto_opt=fileSuffix=.pb"
+    "proto:bonus": "protoc --plugin=node_modules/.bin/protoc-gen-ts_proto -I=./node_modules/sbe-service-proto/proto --ts_proto_out=src/ /proto/ node_modules/sbe-service-proto/proto/bonus.proto --ts_proto_opt=nestJs=true --ts_proto_opt=fileSuffix=.pb"
   },
   "dependencies": {
     "@golevelup/nestjs-rabbitmq": "^4.0.0",
@@ -38,6 +38,7 @@
     "amqplib": "^0.10.3",
     "axios": "^1.6.7",
     "camaro": "^6.2.1",
+    "dayjs": "^1.11.10",
     "dotenv": "^16.3.1",
     "fast-xml-parser": "^4.3.2",
     "hoek": "^6.1.3",
@@ -47,7 +48,6 @@
     "node-expat": "^2.4.0",
     "reflect-metadata": "^0.1.13",
     "rxjs": "^7.8.1",
-    "sbe-service-proto": "git+https://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:x-oauth-basic@github.com/zoroplay/sbe-service-proto.git",
     "typeorm": "^0.3.17",
     "xml2json": "^0.12.0"
   },

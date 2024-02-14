@@ -15,6 +15,8 @@ import {ClientsModule, Transport} from "@nestjs/microservices";
 import {Bonusbet} from "../entity/bonusbet.entity";
 import {Campaignbonus} from "../entity/campaignbonus.entity";
 import {Transactions} from "../entity/transactions.entity";
+import { TrackierService } from './services/trackier.service';
+import { BonusBetService } from "./services/bonus.bet.service";
 
 @Module({
     imports: [
@@ -43,7 +45,7 @@ import {Transactions} from "../entity/transactions.entity";
         ]),
     ],
     controllers: [GrpcController],
-    providers: [BonusService]
+    providers: [BonusBetService, BonusService, TrackierService]
 })
 export class GrpcModule {
 }

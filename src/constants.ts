@@ -11,6 +11,7 @@ export const BONUS_RESET_TYPE_MONTHLY = 'monthly'
 
 export const TRANSACTION_TYPE_DEBIT = 1
 export const TRANSACTION_TYPE_CREDIT = 2
+export const REFERENCE_TYPE_BONUS = 0
 export const REFERENCE_TYPE_PLACEBET = 1
 export const REFERENCE_TYPE_CANCELBET = 2
 export const REFERENCE_TYPE_WONBET = 3

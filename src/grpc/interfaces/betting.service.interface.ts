@@ -8,6 +8,7 @@ export interface PlaceBetRequest {
     source: string;
     ipAddress: string;
     bonusId: number;
+    betId?: number;
 }
 
 export interface BetSlip {

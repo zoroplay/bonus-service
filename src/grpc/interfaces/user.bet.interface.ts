@@ -22,4 +22,11 @@ export interface UserBet {
     totalOdds: number;
     source: string;
     ipAddress: string
+    betId?: number;
+}
+
+export interface ValidateBetResponse{
+    success: boolean;
+    id: number;
+    message: string;
 }

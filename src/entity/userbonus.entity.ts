@@ -15,6 +15,10 @@ export class Userbonus {
     client_id: number;
 
     @Index()
+    @Column({ type: "varchar", length: 100, nullable: true })
+    username: string;
+
+    @Index()
     @Column({ type: "bigint", default: 0})
     rollover_count: number;
 
@@ -64,7 +68,7 @@ export class Userbonus {
 
     @Index()
     @Column({ type: "varchar", nullable: true})
-    affiliate_id: string;
+    promoCode: string;
 
     @Index()
     @CreateDateColumn()

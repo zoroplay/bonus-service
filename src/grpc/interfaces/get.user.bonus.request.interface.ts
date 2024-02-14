@@ -1,7 +1,7 @@
 export interface GetUserBonusRequest {
     clientId: number;
     userId: number;
-    bonusType: string;
-    id: number;
-    status: number;
+    // bonusType: string;
+    id?: number;
+    status?: number;
 }

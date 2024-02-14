@@ -2,9 +2,9 @@ import {Module} from '@nestjs/common';
 import {AppController} from './app.controller';
 import {AppService} from './app.service';
 import {ConfigModule} from '@nestjs/config';
-import {ConsumerModule} from "./consumers/consumer.module";
+// import {ConsumerModule} from "./consumers/consumer.module";
 import {TypeOrmModule} from "@nestjs/typeorm";
-import {RabbitmqModule} from "./rabbitmq.module";
+// import {RabbitmqModule} from "./rabbitmq.module";
 import 'dotenv/config'
 import {GrpcModule} from "./grpc/grpc.module";
 import {ScheduleModule} from "@nestjs/schedule";
@@ -28,8 +28,8 @@ import {Transactions} from "./entity/transactions.entity";
             // ignoreEnvFile: false,
             isGlobal: true,
         }),
-        ConsumerModule,
-        RabbitmqModule,
+        // ConsumerModule,
+        // RabbitmqModule,
         GrpcModule,
         TypeOrmModule.forRoot({
           type: process.env.DB_TYPE as any,

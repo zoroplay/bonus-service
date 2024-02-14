@@ -8,7 +8,7 @@ import {DeleteBonusResponse} from "../interfaces/delete.bonus.response.interface
 import {GetBonusResponse} from "../interfaces/get.bonus.response.interface";
 import {Userbonus} from "../../entity/userbonus.entity";
 import {GetUserBonusRequest} from "../interfaces/get.user.bonus.request.interface";
-import {GetUserBonusResponse, UserBetDTO, UserBonus} from "../interfaces/get.user.bonus.response.interface";
+import {BonusTransaction, GetUserBonusResponse, UserBetDTO, UserBonus} from "../interfaces/get.user.bonus.response.interface";
 import {AwardBonusRequest} from "../interfaces/award.bonus.request.interface";
 import {UserBonusResponse} from "../interfaces/user.bonus.response.interface";
 import {UserBet} from "../interfaces/user.bet.interface";
@@ -20,7 +20,7 @@ import {
     BONUS_TYPE_FIRST_DEPOSIT,
     BONUS_TYPE_FREEBET,
     BONUS_TYPE_REFERRAL,
-    BONUS_TYPE_SHARE_BET, REFERENCE_TYPE_PLACEBET, TRANSACTION_TYPE_DEBIT
+    BONUS_TYPE_SHARE_BET, REFERENCE_TYPE_BONUS, REFERENCE_TYPE_PLACEBET, TRANSACTION_TYPE_CREDIT, TRANSACTION_TYPE_DEBIT
 } from "../../constants";
 import axios from 'axios';
 
@@ -36,6 +36,7 @@ import {
 import {Campaignbonus} from "../../entity/campaignbonus.entity";
 import any = jasmine.any;
 import {Bonusbet} from "../../entity/bonusbet.entity";
+import { TrackierService } from "./trackier.service";
 
 export class BonusService {
 
@@ -56,6 +57,8 @@ export class BonusService {
 
         @InjectRepository(Bonusbet)
         private bonusBetRepository: Repository<Bonusbet>,
+
+        private trackierService: TrackierService
 
     ) {
 
@@ -618,17 +621,18 @@ export class BonusService {
                 });
             }
 
-            else if(data.bonusType.length > 0) {
+            // else if(data.bonusType.length > 0) {
 
-                bonus = await this.userBonusRepository.find({
-                    where: {
-                        user_id: parseInt(""+data.userId),
-                        client_id: parseInt(""+data.clientId),
-                        bonus_type: data.bonusType
-                    }
-                });
+            //     bonus = await this.userBonusRepository.find({
+            //         where: {
+            //             user_id: parseInt(""+data.userId),
+            //             client_id: parseInt(""+data.clientId),
+            //             bonus_type: data.bonusType
+            //         }
+            //     });
 
-            } else {
+            // } 
+            else {
 
                 bonus = await this.userBonusRepository.find({
                     where: {
@@ -652,32 +656,30 @@ export class BonusService {
                 usrBonus.pendingAmount = bon.pending_amount
                 usrBonus.totalRolloverCount = bon.rollover_count
                 usrBonus.completedRolloverCount = bon.completed_rollover_count
+                usrBonus.status = bon.status;
 
-                // get bets
-                let bets = await this.bonusBetRepository.find({
+                // get transactions
+                let transactions = await this.transactionsRepository.find({
                     where: {
                         user_bonus_id: bon.id
                     }
                 })
 
-                let useBets = [] as UserBetDTO[]
+                let bonusTrans = [] as BonusTransaction[]
 
-                for(const bet of bets) {
+                for(const transaction of transactions) {
 
-                    let userBetDto = {} as UserBetDTO
-                    userBetDto.betId = bet.bet_id
-                    userBetDto.created = bet.created
-                    userBetDto.pendingAmount = bet.pending_amount
-                    userBetDto.rolledAmount = bet.rolled_amount
-                    userBetDto.rolloverCount = bet.rollover_count
-                    userBetDto.stake = bet.stake
-                    userBetDto.status = bet.status
+                    let bonusTran = {} as BonusTransaction
+                    bonusTran.amount = transaction.amount
+                    bonusTran.balance = transaction.balance;
+                    bonusTran.desc = transaction.description
+                    bonusTran.createdAt = transaction.created
 
-                    useBets.push(userBetDto)
+                    bonusTrans.push(bonusTran)
 
                 }
 
-                usrBonus.bets = useBets
+                usrBonus.transactions = bonusTrans
 
                 b.push(usrBonus)
             }
@@ -698,7 +700,6 @@ export class BonusService {
     }
 
     async awardBonus(data: AwardBonusRequest): Promise<UserBonusResponse> {
-
         // validations
         if (data.clientId == 0) {
 
@@ -768,7 +769,6 @@ export class BonusService {
         let bonusAmount = data.amount
 
         if(data.baseValue > 0 ) {
-
             bonusAmount = data.baseValue * existingBonus.bonus_amount_multiplier
         }
 
@@ -782,7 +782,8 @@ export class BonusService {
         existingUserBonus.pending_amount = bonusAmount * existingBonus.rollover_count
         existingUserBonus.rolled_amount = 0
         existingUserBonus.completed_rollover_count = 0
-        existingUserBonus.name = existingBonus.name
+        existingUserBonus.name = existingBonus.name;
+        existingUserBonus.promoCode = data.promoCode;
 
         try {
 
@@ -792,8 +793,25 @@ export class BonusService {
 
                 let userId = parseInt(parts[0])
                 existingUserBonus.user_id = userId
+                existingUserBonus.username = data.username
 
-                const bonusResult = await this.userBonusRepository.save(existingUserBonus)
+                const bonusResult = await this.userBonusRepository.save(existingUserBonus);
+
+                if (data.promoCode)
+                    this.trackierService.createCustomer(data);
+
+                // create transaction
+                let transaction =  new Transactions()
+                transaction.client_id = data.clientId
+                transaction.user_id = parseInt(data.userId)
+                transaction.amount = bonusAmount
+                transaction.balance = bonusAmount;
+                transaction.user_bonus_id = bonusResult.id
+                transaction.transaction_type = TRANSACTION_TYPE_CREDIT
+                transaction.reference_type = REFERENCE_TYPE_BONUS
+                transaction.reference_id = bonusResult.id
+                transaction.description = existingBonus.name+" awarded"
+                const transactionResult = await this.transactionsRepository.save(transaction)
 
                 return {
                     status: 201,
@@ -814,7 +832,6 @@ export class BonusService {
                     existingUserBonus.user_id = userId
 
                     await this.userBonusRepository.save(existingUserBonus)
-
                 }
 
                 return {
@@ -833,7 +850,7 @@ export class BonusService {
 
         } catch (e) {
 
-            this.logger.error(" error creating bonus " + e.toString())
+            this.logger.error(" error awarding bonus " + e.toString())
 
             return {
                 status: 500,
@@ -925,7 +942,7 @@ export class BonusService {
             const bonusResult = await this.campaignBonusRepository.save(campaign)
             if (data.affiliateIds !== ''){
                 // send campaign to trackier
-                const res = await this.createTrackierPromoCode(data);
+                const res = await this.trackierService.createTrackierPromoCode(data);
                 if (!res.success) {
                     return {
                         bonusId: 0,
@@ -1295,74 +1312,4 @@ export class BonusService {
             return {success: false, message: 'Unable to fetch campaign', data: null}
         }
     }
-
-    async activateBonus(data) {
-        const {clientId, userId, promoCode} = data;
-        const campaign = await this.campaignBonusRepository.findOne({
-            where: {
-                bonus_code: promoCode,
-                client_id: clientId
-            }
-        })
-
-        if (campaign) {
-            const bonus = campaign.bonus;
-            
-        }
-    }
-
-    async createTrackierPromoCode(data: CreateCampaignBonusDto) {
-        try {
-            const bonus = await this.bonusRepository.findOne({where: {id: data.bonusId}});
-            const now = new Date();
-            const start = new Date(data.startDate);
-            let status = 'active';
-            const amount: any = bonus.bonus_amount;
-            if (start > now) status = 'future';
-
-            const payload = {
-                code: data.bonusCode,
-                campaignId: data.trackierCampaignId,
-                affiliateIds: data.affiliateIds.split(','),
-                currency: 'ngn',
-                bonus: parseFloat(amount),
-                type: 'exclusive',
-                status,
-                startDate: data.startDate,
-                endDate: data.endDate,
-            }
-
-
-            const authRes = await this.getAccessToken();
-            
-            if (!authRes.status) {
-                console.log('Error sending trackier result', authRes);
-            }
-
-            const resp = await axios.post(
-                'https://api.trackierigaming.io/coupon', payload,
-                {
-                    headers: {
-                        'x-api-key': process.env.TRACKIER_API_KEY,
-                        authorization: `BEARER ${authRes.data.accessToken}`,
-                    },
-                },
-            );
-            // console.log('trackier response ', resp.data);
-            return resp.data;
-        } catch (e) {
-            console.log('Trackier error', e.message)
-            return {success: false, message: e.emssage};
-        }
-    }
-
-    async getAccessToken() {
-        return axios.post(
-            'https://api.trackierigaming.io/oauth/access-refresh-token',
-            {
-                auth_code: process.env.TRACKIER_AUTH_CODE,
-            },
-        );
-    }
-
 }

@@ -16,11 +16,15 @@ export class Transactions {
 
     @Index()
     @Column({ type: "bigint"})
-    bonus_id: number;
+    user_bonus_id: number;
 
     @Index()
     @Column({ type: "bigint"})
     amount: number;
+
+    @Index()
+    @Column({ type: "bigint"})
+    balance: number;
 
     @Index()
     @Column({ type: "int", default: "0" })
