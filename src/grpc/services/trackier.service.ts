@@ -61,7 +61,7 @@ export class TrackierService {
                     },
                 },
             );
-            // console.log('trackier response ', resp.data);
+            console.log('trackier response ', resp.data);
             return resp.data;
         } catch (e) {
             console.log('Trackier error', e.message)
