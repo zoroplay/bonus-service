@@ -561,6 +561,8 @@ export class BonusService {
                     "rolloverCount" : b.rollover_count,
                     "name" : b.name,
                     "minimumBettingStake": b.minimum_betting_stake,
+                    "minimumEntryAmount": b.minimum_entry_amount,
+                    "product": b.product,
                 }
 
                 res.push(obj)
