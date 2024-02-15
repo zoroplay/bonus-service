@@ -938,23 +938,19 @@ export class BonusService {
         campaign.name = data.name
 
         try {
-
+            let description = 'campaign bonus created successfully'
             const bonusResult = await this.campaignBonusRepository.save(campaign)
             if (data.affiliateIds !== ''){
                 // send campaign to trackier
                 const res = await this.trackierService.createTrackierPromoCode(data);
                 if (!res.success) {
-                    return {
-                        bonusId: 0,
-                        status: 400,
-                        description: "unable to submit data to trackier"
-                    }
+                    description = "campaign bonus created successfully but unable to submit data to trackier"
                 }
             }
             return {
                 bonusId: bonusResult.id,
                 status: 201,
-                description: "campaign bonus created successfully",
+                description,
             }
 
         } catch (e) {
