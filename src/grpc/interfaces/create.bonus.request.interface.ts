@@ -3,9 +3,9 @@ export interface CreateBonusRequest {
     clientId: number;
     bonusType: string;
     product: string;
-    minimumStake: number;
-    expiryInHours: number;
-    minimumEvents: number;
+    // minimumStake: number;
+    duration: number;
+    maxAmount: number;
     minimumOddsPerEvent: number;
     minimumTotalOdds: number;
     applicableBetType: string;
@@ -19,5 +19,5 @@ export interface CreateBonusRequest {
     bonusAmountMultiplier: number;
     rolloverCount: number;
     name: string;
-    minimumBettingStake: number;
+    creditType: string;
 }

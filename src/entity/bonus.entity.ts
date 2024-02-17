@@ -39,6 +39,10 @@ export class Bonus {
     bonus_amount: number;
 
     @Index()
+    @Column({ type: "decimal", precision: 20, scale: 2, nullable: true, default: 0 })
+    max_amount: number;
+
+    @Index()
     @Column({ type: "int", default: "0" })
     bonus_amount_multiplier: number;
 
@@ -48,11 +52,11 @@ export class Bonus {
 
     @Index()
     @Column({ type: "int", default: "24" })
-    expiry_in_hours: number;
+    duration: number;
 
-    @Index()
-    @Column({ type: "int", default: "3" })
-    minimum_events: number;
+    // @Index()
+    // @Column({ type: "int", default: "3" })
+    // minimum_events: number;
 
     @Index()
     @Column({ type: "decimal", precision: 20, scale: 2, nullable: false,default: "0"  })
@@ -75,7 +79,7 @@ export class Bonus {
     reset_interval_type: string;
 
     @Index()
-    @Column({ type: "int", default: "0" })
+    @Column({ type: "int", default: "3" })
     minimum_selection: number;
 
     @Index()
@@ -83,12 +87,8 @@ export class Bonus {
     minimum_lost_games: number;
 
     @Index()
-    @Column({ type: "int", default: "0" })
-    minimum_betting_stake: number;
-
-    // @Index()
-    // @Column({ type: "varchar", length: 100, nullable: false, default: 0  })
-    // sport_percentage: string;
+    @Column({ type: "varchar", length: 100, nullable: true, default: 'flat' })
+    credit_type: string;
 
     // @Index()
     // @Column({ type: "varchar", length: 100, nullable: false, default: 0  })

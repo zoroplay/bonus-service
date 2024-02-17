@@ -136,7 +136,7 @@ export class BonusBetService  implements OnModuleInit{
             }
 
             // check if bonus is expired
-            if(userBonus.expiry_date_in_timestamp < this.bonusService.getTimestampInSeconds()) {
+            if(dayjs().isAfter(userBonus.expiry_date)) {
 
                 return {
                     success: false,
@@ -158,23 +158,23 @@ export class BonusBetService  implements OnModuleInit{
 
             }
 
-            if(data.stake < existingBonus.minimum_betting_stake) {
+            if(data.stake < existingBonus.minimum_entry_amount) {
 
                 return {
                     success: false,
-                    message: "Your stake of "+data.stake+" is below the minimum betting stake for this bonus. Place a bet with a stake of at least "+existingBonus.minimum_betting_stake,
+                    message: "Your stake of "+data.stake+" is below the minimum betting stake for this bonus. Place a bet with a stake of at least "+existingBonus.minimum_entry_amount,
                     id: 0
                 }
             }
 
             // check if user qualifies for bonus
-            if(existingBonus.minimum_events < data.betslip.length) {
+            if(existingBonus.minimum_selection < data.betslip.length) {
 
                 this.logger.error("minimum_events rule violated")
 
                 return {
                     success: false,
-                    message: "You need atleast "+existingBonus.minimum_events+" events to use this bonus",
+                    message: "You need atleast "+existingBonus.minimum_selection+" events to use this bonus",
                     id: 0
                 }
             }

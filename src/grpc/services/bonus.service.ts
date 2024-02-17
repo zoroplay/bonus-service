@@ -8,21 +8,18 @@ import {DeleteBonusResponse} from "../interfaces/delete.bonus.response.interface
 import {GetBonusResponse} from "../interfaces/get.bonus.response.interface";
 import {Userbonus} from "../../entity/userbonus.entity";
 import {GetUserBonusRequest} from "../interfaces/get.user.bonus.request.interface";
-import {BonusTransaction, GetUserBonusResponse, UserBetDTO, UserBonus} from "../interfaces/get.user.bonus.response.interface";
+import {BonusTransaction, GetUserBonusResponse, UserBonus} from "../interfaces/get.user.bonus.response.interface";
 import {AwardBonusRequest} from "../interfaces/award.bonus.request.interface";
 import {UserBonusResponse} from "../interfaces/user.bonus.response.interface";
-import {UserBet} from "../interfaces/user.bet.interface";
-import {BonusResponse} from "../interfaces/has.bonus.response.interface";
-import {MoreThanOrEqual, Repository} from "typeorm"
+import {Repository} from "typeorm"
 import {BonusStatusRequest} from "../interfaces/bonus.status.request.interface";
 import {
     BONUS_TYPE_CASHBACK,
     BONUS_TYPE_FIRST_DEPOSIT,
     BONUS_TYPE_FREEBET,
     BONUS_TYPE_REFERRAL,
-    BONUS_TYPE_SHARE_BET, REFERENCE_TYPE_BONUS, REFERENCE_TYPE_PLACEBET, TRANSACTION_TYPE_CREDIT, TRANSACTION_TYPE_DEBIT
+    BONUS_TYPE_SHARE_BET, REFERENCE_TYPE_BONUS, TRANSACTION_TYPE_CREDIT
 } from "../../constants";
-import axios from 'axios';
 
 import {Transactions} from "../../entity/transactions.entity";
 import {
@@ -37,6 +34,7 @@ import {Campaignbonus} from "../../entity/campaignbonus.entity";
 import any = jasmine.any;
 import {Bonusbet} from "../../entity/bonusbet.entity";
 import { TrackierService } from "./trackier.service";
+import dayjs = require("dayjs");
 
 export class BonusService {
 
@@ -88,7 +86,6 @@ export class BonusService {
         }
 
         if(bonusType === BONUS_TYPE_FREEBET) {
-
             // no specific conditions
             data.minimumLostGames = 0;
             data.minimumSelection = 0;
@@ -201,9 +198,9 @@ export class BonusService {
         let bonus = new Bonus();
         bonus.bonus_type = data.bonusType
         bonus.client_id = data.clientId
-        bonus.minimum_stake = data.minimumStake
-        bonus.expiry_in_hours = data.expiryInHours
-        bonus.minimum_events = data.minimumEvents
+        // bonus.minimum_stake = data.minimumStake
+        bonus.duration = data.duration
+        bonus.credit_type = data.creditType
         bonus.minimum_odds_per_event = data.minimumOddsPerEvent
         bonus.minimum_total_odds = data.minimumTotalOdds
         bonus.applicable_bet_type = data.applicableBetType
@@ -218,7 +215,7 @@ export class BonusService {
         bonus.reset_interval_type = data.resetIntervalType
         bonus.minimum_entry_amount = data.minimumEntryAmount
         bonus.bonus_amount = data.bonusAmount
-        bonus.minimum_betting_stake = data.minimumBettingStake
+        bonus.max_amount = data.maxAmount
 
         try {
 
@@ -367,9 +364,9 @@ export class BonusService {
                 {
                     bonus_type: data.bonusType,
                     client_id : data.clientId,
-                    minimum_stake : data.minimumStake,
-                    expiry_in_hours : data.expiryInHours,
-                    minimum_events : data.minimumEvents,
+                    // minimum_stake : data.minimumStake,
+                    duration : data.duration,
+                    credit_type : data.creditType,
                     minimum_odds_per_event : data.minimumOddsPerEvent,
                     minimum_total_odds : data.minimumTotalOdds,
                     applicable_bet_type : data.applicableBetType,
@@ -382,7 +379,7 @@ export class BonusService {
                     rollover_count : data.rolloverCount,
                     name : data.name,
                     bonus_amount_multiplier : data.bonusAmountMultiplier,
-                    minimum_betting_stake : data.minimumBettingStake,
+                    max_amount : data.maxAmount,
                 }
             )
 
@@ -547,8 +544,8 @@ export class BonusService {
                     "clientId": b.client_id,
                     "bonusType": b.bonus_type,
                     "minimumStake": b.minimum_stake,
-                    "expiryInHours": b.expiry_in_hours,
-                    "minimumEvents": b.minimum_events,
+                    "duration": b.duration,
+                    "maxAmount": b.max_amount,
                     "minimumOddsPerEvent": b.minimum_odds_per_event,
                     "minimumTotalOdds": b.minimum_total_odds,
                     "applicableBetType": b.applicable_bet_type,
@@ -560,7 +557,7 @@ export class BonusService {
                     "bonusAmountMultiplier" : b.bonus_amount_multiplier,
                     "rolloverCount" : b.rollover_count,
                     "name" : b.name,
-                    "minimumBettingStake": b.minimum_betting_stake,
+                    "creditType": b.credit_type,
                     "minimumEntryAmount": b.minimum_entry_amount,
                     "product": b.product,
                 }
@@ -651,7 +648,7 @@ export class BonusService {
                 let usrBonus = {} as UserBonus
                 usrBonus.bonusType = bon.bonus_type
                 usrBonus.amount = bon.amount
-                usrBonus.expiryDateInTimestamp = bon.expiry_date_in_timestamp
+                usrBonus.expiryDate = bon.expiry_date
                 usrBonus.created = bon.created
                 usrBonus.name = bon.name
                 usrBonus.rolledAmount = bon.rolled_amount
@@ -766,7 +763,7 @@ export class BonusService {
 
         let existingUserBonus = new Userbonus();
 
-        let expiry = this.getTimestampInSeconds() + (existingBonus.expiry_in_hours * 60 * 60)
+        let expiry = dayjs().add(existingBonus.duration, 'days').format('YYYY-MM-DD');
 
         let bonusAmount = data.amount
 
@@ -779,7 +776,7 @@ export class BonusService {
         existingUserBonus.bonus_type = existingBonus.bonus_type
         existingUserBonus.amount = bonusAmount;
         existingUserBonus.balance = bonusAmount;
-        existingUserBonus.expiry_date_in_timestamp = expiry;
+        existingUserBonus.expiry_date = expiry;
         existingUserBonus.rollover_count = existingBonus.rollover_count
         existingUserBonus.pending_amount = bonusAmount * existingBonus.rollover_count
         existingUserBonus.rolled_amount = 0
@@ -821,7 +818,7 @@ export class BonusService {
                     bonus: {
                         bonusType: bonusResult.bonus_type,
                         amount: bonusResult.amount,
-                        expiryDateInTimestamp: bonusResult.expiry_date_in_timestamp,
+                        expiryDate: bonusResult.expiry_date,
                         created: bonusResult.created
                     },
                 }
@@ -842,12 +839,10 @@ export class BonusService {
                     bonus: {
                         bonusType: existingUserBonus.bonus_type,
                         amount: existingUserBonus.amount,
-                        expiryDateInTimestamp: existingUserBonus.expiry_date_in_timestamp,
+                        expiryDateInTimestamp: existingUserBonus.expiry_date,
                         created: existingUserBonus.created
                     },
                 }
-
-
             }
 
         } catch (e) {
@@ -1217,9 +1212,9 @@ export class BonusService {
                 bon.id = bonus.id
                 bon.clientId = bonus.client_id
                 bon.bonusType = bonus.bonus_type
-                bon.minimumStake = bonus.minimum_stake
-                bon.expiryInHours = bonus.expiry_in_hours
-                bon.minimumEvents = bonus.minimum_events
+                bon.creditType = bonus.credit_type
+                bon.duration = bonus.duration
+                // bon.minimumEvents = bonus.minimum_events
                 bon.minimumOddsPerEvent = bonus.minimum_odds_per_event
                 bon.minimumTotalOdds = bonus.minimum_total_odds
                 bon.applicableBetType = bonus.applicable_bet_type
@@ -1231,7 +1226,7 @@ export class BonusService {
                 bon.bonusAmountMultiplier = bonus.id
                 bon.rolloverCount = bonus.rollover_count
                 bon.name = bonus.name
-                bon.minimumBettingStake = bonus.minimum_betting_stake
+                bon.maxAmount = bonus.max_amount
 
                 let camp = {} as CampaignBonusData
                 camp.id = campaign.id
@@ -1277,9 +1272,9 @@ export class BonusService {
                 bon.id = bonus.id
                 bon.clientId = bonus.client_id
                 bon.bonusType = bonus.bonus_type
-                bon.minimumStake = bonus.minimum_stake
-                bon.expiryInHours = bonus.expiry_in_hours
-                bon.minimumEvents = bonus.minimum_events
+                bon.creditType = bonus.credit_type
+                bon.duration = bonus.duration
+                // bon.minimumEvents = bonus.minimum_events
                 bon.minimumOddsPerEvent = bonus.minimum_odds_per_event
                 bon.minimumTotalOdds = bonus.minimum_total_odds
                 bon.applicableBetType = bonus.applicable_bet_type
@@ -1291,7 +1286,7 @@ export class BonusService {
                 bon.bonusAmountMultiplier = bonus.id
                 bon.rolloverCount = bonus.rollover_count
                 bon.name = bonus.name
-                bon.minimumBettingStake = bonus.minimum_betting_stake
+                bon.maxAmount = bonus.max_amount
 
                 let camp = {} as CampaignBonusData
                 camp.id = campaign.id

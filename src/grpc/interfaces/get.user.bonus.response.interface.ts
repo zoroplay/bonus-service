@@ -18,7 +18,7 @@ export interface BonusTransaction {
 export interface UserBonus {
     bonusType : string;
     amount : number;
-    expiryDateInTimestamp : number;
+    expiryDate : string;
     created : string;
     name : string;
     rolledAmount : number;
