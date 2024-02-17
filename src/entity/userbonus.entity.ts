@@ -36,7 +36,7 @@ export class Userbonus {
 
     @Index()
     @Column({type:"bigint", nullable: false, default: 0 })
-    expiry_date_in_timestamp: number;
+    expiry_date: string;
 
     @Index()
     @Column({type:"bigint", nullable: false, default: 1 })
