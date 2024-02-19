@@ -35,7 +35,7 @@ export class Userbonus {
     name: string;
 
     @Index()
-    @Column({type:"bigint", nullable: false, default: 0 })
+    @Column({type:"varchar", nullable: true, default: 0 })
     expiry_date: string;
 
     @Index()
