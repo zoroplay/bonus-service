@@ -8,7 +8,7 @@ import {DeleteBonusResponse} from "../interfaces/delete.bonus.response.interface
 import {GetBonusResponse} from "../interfaces/get.bonus.response.interface";
 import {Userbonus} from "../../entity/userbonus.entity";
 import {GetUserBonusRequest} from "../interfaces/get.user.bonus.request.interface";
-import {BonusTransaction, GetUserBonusResponse, UserBonus} from "../interfaces/get.user.bonus.response.interface";
+import {BonusTransaction, CheckFirstDepositResponse, GetUserBonusResponse, UserBonus} from "../interfaces/get.user.bonus.response.interface";
 import {AwardBonusRequest} from "../interfaces/award.bonus.request.interface";
 import {UserBonusResponse} from "../interfaces/user.bonus.response.interface";
 import {Repository} from "typeorm"
@@ -35,6 +35,7 @@ import any = jasmine.any;
 import {Bonusbet} from "../../entity/bonusbet.entity";
 import { TrackierService } from "./trackier.service";
 import dayjs = require("dayjs");
+import { WalletService } from "src/wallet/wallet.service";
 
 export class BonusService {
 
@@ -56,7 +57,9 @@ export class BonusService {
         @InjectRepository(Bonusbet)
         private bonusBetRepository: Repository<Bonusbet>,
 
-        private trackierService: TrackierService
+        private trackierService: TrackierService,
+
+        private walletService: WalletService
 
     ) {
 
@@ -70,20 +73,20 @@ export class BonusService {
     async create(data: CreateBonusRequest): Promise<CreateBonusResponse> {
         let bonusType = data.bonusType;
 
-        if(bonusType === BONUS_TYPE_FIRST_DEPOSIT) {
+        // if(bonusType === BONUS_TYPE_FIRST_DEPOSIT) {
 
-            if (data.minimumEntryAmount < 1) {
+        //     if (data.minimumEntryAmount < 1) {
 
-                return {
-                    bonusId: 0,
-                    status: 401,
-                    description: "missing minimum entry amount"
-                }
-            }
-            data.minimumLostGames = 0;
-            data.minimumSelection = 0;
+        //         return {
+        //             bonusId: 0,
+        //             status: 401,
+        //             description: "missing minimum entry amount"
+        //         }
+        //     }
+        //     data.minimumLostGames = 0;
+        //     data.minimumSelection = 0;
 
-        }
+        // }
 
         if(bonusType === BONUS_TYPE_FREEBET) {
             // no specific conditions
@@ -94,69 +97,69 @@ export class BonusService {
             data.rolloverCount = 0
         }
 
-        if(bonusType === BONUS_TYPE_REFERRAL) {
+        // if(bonusType === BONUS_TYPE_REFERRAL) {
 
-            if (data.minimumEntryAmount < 1) {
+        //     if (data.minimumEntryAmount < 1) {
 
-                return {
-                    bonusId: 0,
-                    status: 401,
-                    description: "missing minimum entry amount"
-                }
-            }
-            data.minimumLostGames = 0;
-            data.minimumSelection = 0;
-            data.resetIntervalType = ""
+        //         return {
+        //             bonusId: 0,
+        //             status: 401,
+        //             description: "missing minimum entry amount"
+        //         }
+        //     }
+        //     data.minimumLostGames = 0;
+        //     data.minimumSelection = 0;
+        //     data.resetIntervalType = ""
 
-        }
+        // }
 
-        if(bonusType === BONUS_TYPE_SHARE_BET) {
+        // if(bonusType === BONUS_TYPE_SHARE_BET) {
 
-            if (data.minimumEntryAmount < 1) {
+        //     if (data.minimumEntryAmount < 1) {
 
-                return {
-                    bonusId: 0,
-                    status: 401,
-                    description: "missing minimum entry amount"
-                }
-            }
-            data.minimumLostGames = 0;
-            data.minimumSelection = 0;
-            data.resetIntervalType = ""
+        //         return {
+        //             bonusId: 0,
+        //             status: 401,
+        //             description: "missing minimum entry amount"
+        //         }
+        //     }
+        //     data.minimumLostGames = 0;
+        //     data.minimumSelection = 0;
+        //     data.resetIntervalType = ""
 
-        }
+        // }
 
-        if(bonusType === BONUS_TYPE_CASHBACK) {
+        // if(bonusType === BONUS_TYPE_CASHBACK) {
 
-            if (data.minimumEntryAmount < 1) {
+        //     if (data.minimumEntryAmount < 1) {
 
-                return {
-                    bonusId: 0,
-                    status: 401,
-                    description: "missing minimum entry amount"
-                }
-            }
+        //         return {
+        //             bonusId: 0,
+        //             status: 401,
+        //             description: "missing minimum entry amount"
+        //         }
+        //     }
 
-            if (data.minimumSelection < 1) {
+        //     if (data.minimumSelection < 1) {
 
-                return {
-                    bonusId: 0,
-                    status: 401,
-                    description: "missing minimum selections"
-                }
-            }
+        //         return {
+        //             bonusId: 0,
+        //             status: 401,
+        //             description: "missing minimum selections"
+        //         }
+        //     }
 
-            // if (data.minimumLostGames < 1) {
+        //     // if (data.minimumLostGames < 1) {
 
-            //     return {
-            //         bonusId: 0,
-            //         status: 401,
-            //         description: "missing minimum lost games"
-            //     }
-            // }
+        //     //     return {
+        //     //         bonusId: 0,
+        //     //         status: 401,
+        //     //         description: "missing minimum lost games"
+        //     //     }
+        //     // }
 
-            data.resetIntervalType = ""
-        }
+        //     data.resetIntervalType = ""
+        // }
 
         // validations
         if (data.clientId == 0) {
@@ -168,14 +171,14 @@ export class BonusService {
             }
         }
 
-        if (data.bonusAmount == 0 && data.bonusAmountMultiplier == 0) {
+        // if (data.bonusAmount == 0 && data.bonusAmountMultiplier == 0) {
 
-            return {
-                bonusId: 0,
-                status: 401,
-                description: "missing bonus amount"
-            }
-        }
+        //     return {
+        //         bonusId: 0,
+        //         status: 401,
+        //         description: "missing bonus amount"
+        //     }
+        // }
 
         // check if this bonus exists
 
@@ -207,7 +210,7 @@ export class BonusService {
         bonus.maximum_winning = data.maximumWinning
         bonus.rollover_count = data.rolloverCount
         bonus.name = data.name
-        bonus.bonus_amount_multiplier = data.bonusAmountMultiplier
+        // bonus.bonus_amount_multiplier = data.bonusAmountMultiplier
         bonus.status = 1
         bonus.product = data.product
         bonus.minimum_lost_games = data.minimumLostGames
@@ -238,94 +241,94 @@ export class BonusService {
         
         let bonusType = data.bonusType
 
-        if(bonusType === BONUS_TYPE_FIRST_DEPOSIT) {
+        // if(bonusType === BONUS_TYPE_FIRST_DEPOSIT) {
 
-            if (data.minimumEntryAmount < 1) {
+        //     if (data.minimumEntryAmount < 1) {
 
-                return {
-                    bonusId: 0,
-                    status: 401,
-                    description: "missing minimum entry amount"
-                }
-            }
-            data.minimumLostGames = 0;
-            data.minimumSelection = 0;
+        //         return {
+        //             bonusId: 0,
+        //             status: 401,
+        //             description: "missing minimum entry amount"
+        //         }
+        //     }
+        //     data.minimumLostGames = 0;
+        //     data.minimumSelection = 0;
 
-        }
+        // }
 
-        if(bonusType === BONUS_TYPE_FREEBET) {
+        // if(bonusType === BONUS_TYPE_FREEBET) {
 
-            // no specific conditions
-            data.minimumLostGames = 0;
-            data.minimumSelection = 0;
-            data.resetIntervalType = ""
-            data.minimumEntryAmount = 0
+        //     // no specific conditions
+        //     data.minimumLostGames = 0;
+        //     data.minimumSelection = 0;
+        //     data.resetIntervalType = ""
+        //     data.minimumEntryAmount = 0
 
-        }
+        // }
 
-        if(bonusType === BONUS_TYPE_REFERRAL) {
+        // if(bonusType === BONUS_TYPE_REFERRAL) {
 
-            if (data.minimumEntryAmount < 1) {
+        //     if (data.minimumEntryAmount < 1) {
 
-                return {
-                    bonusId: 0,
-                    status: 401,
-                    description: "missing minimum entry amount"
-                }
-            }
-            data.minimumLostGames = 0;
-            data.minimumSelection = 0;
-            data.resetIntervalType = ""
+        //         return {
+        //             bonusId: 0,
+        //             status: 401,
+        //             description: "missing minimum entry amount"
+        //         }
+        //     }
+        //     data.minimumLostGames = 0;
+        //     data.minimumSelection = 0;
+        //     data.resetIntervalType = ""
 
-        }
+        // }
 
-        if(bonusType === BONUS_TYPE_SHARE_BET) {
+        // if(bonusType === BONUS_TYPE_SHARE_BET) {
 
-            if (data.minimumEntryAmount < 1) {
+        //     if (data.minimumEntryAmount < 1) {
 
-                return {
-                    bonusId: 0,
-                    status: 401,
-                    description: "missing minimum entry amount"
-                }
-            }
-            data.minimumLostGames = 0;
-            data.minimumSelection = 0;
-            data.resetIntervalType = ""
+        //         return {
+        //             bonusId: 0,
+        //             status: 401,
+        //             description: "missing minimum entry amount"
+        //         }
+        //     }
+        //     data.minimumLostGames = 0;
+        //     data.minimumSelection = 0;
+        //     data.resetIntervalType = ""
 
-        }
+        // }
 
-        if(bonusType === BONUS_TYPE_CASHBACK) {
+        // if(bonusType === BONUS_TYPE_CASHBACK) {
 
-            if (data.minimumEntryAmount < 1) {
+        //     if (data.minimumEntryAmount < 1) {
 
-                return {
-                    bonusId: 0,
-                    status: 401,
-                    description: "missing minimum entry amount"
-                }
-            }
+        //         return {
+        //             bonusId: 0,
+        //             status: 401,
+        //             description: "missing minimum entry amount"
+        //         }
+        //     }
 
-            if (data.minimumSelection < 1) {
+        //     if (data.minimumSelection < 1) {
 
-                return {
-                    bonusId: 0,
-                    status: 401,
-                    description: "missing minimum selections"
-                }
-            }
+        //         return {
+        //             bonusId: 0,
+        //             status: 401,
+        //             description: "missing minimum selections"
+        //         }
+        //     }
 
-            if (data.minimumLostGames < 1) {
+        //     if (data.minimumLostGames < 1) {
 
-                return {
-                    bonusId: 0,
-                    status: 401,
-                    description: "missing minimum lost games"
-                }
-            }
+        //         return {
+        //             bonusId: 0,
+        //             status: 401,
+        //             description: "missing minimum lost games"
+        //         }
+        //     }
 
-            data.resetIntervalType = ""
-        }
+        //     data.resetIntervalType = ""
+        // }
 
         // validations
         if (data.clientId == 0) {
@@ -378,7 +381,7 @@ export class BonusService {
                     bonus_amount: data.bonusAmount,
                     rollover_count : data.rolloverCount,
                     name : data.name,
-                    bonus_amount_multiplier : data.bonusAmountMultiplier,
+                    // bonus_amount_multiplier : data.bonusAmountMultiplier,
                     max_amount : data.maxAmount,
                 }
             )
@@ -543,7 +546,7 @@ export class BonusService {
                     "id": b.id,
                     "clientId": b.client_id,
                     "bonusType": b.bonus_type,
-                    "minimumStake": b.minimum_stake,
+                    // "minimumStake": b.minimum_stake,
                     "duration": b.duration,
                     "maxAmount": b.max_amount,
                     "minimumOddsPerEvent": b.minimum_odds_per_event,
@@ -554,7 +557,7 @@ export class BonusService {
                     "status": b.status,
                     "created": b.created,
                     "updated": b.updated,
-                    "bonusAmountMultiplier" : b.bonus_amount_multiplier,
+                    "minimumSelection" : b.minimum_selection,
                     "rolloverCount" : b.rollover_count,
                     "name" : b.name,
                     "creditType": b.credit_type,
@@ -698,6 +701,41 @@ export class BonusService {
 
     }
 
+    async checkFirstDepositBonus(param): Promise<CheckFirstDepositResponse> {
+        try {
+            // find first_deposit bonus
+            const bonus = await this.bonusRepository.findOne({where: {bonus_type: 'first_deposit'}});
+
+            if (!bonus)
+                return {success: false, message: 'Bonus not found'};
+
+            if (bonus && bonus.status !== 1)
+                return {success: false, message: 'Bonus not active'};
+
+            // check if user has been awarded first_deposit bonus before
+            const userBonus = await this.userBonusRepository.findOne({where: {
+                user_id: param.userId,
+                client_id: param.clientId,
+                bonus_id: bonus.id,
+            }})
+
+            if (userBonus)
+                return {success: false, message: 'Bonus already used'};
+
+            
+
+            return {success: true, message: 'Bonus available', data: {
+                bonusId: bonus.id,
+                value: bonus.bonus_amount,
+                type: bonus.credit_type,
+                name: bonus.name
+            } };
+
+        } catch(e) {
+            return {success: false, message: 'Bonus request failed: ' + e.message};
+        }
+    }
+
     async awardBonus(data: AwardBonusRequest): Promise<UserBonusResponse> {
         // validations
         if (data.clientId == 0) {
@@ -767,9 +805,9 @@ export class BonusService {
 
         let bonusAmount = data.amount
 
-        if(data.baseValue > 0 ) {
-            bonusAmount = data.baseValue * existingBonus.bonus_amount_multiplier
-        }
+        // if(data.baseValue > 0 ) {
+        //     bonusAmount = data.baseValue * existingBonus.bonus_amount_multiplier
+        // }
 
         existingUserBonus.client_id = data.clientId
         existingUserBonus.bonus_id = existingBonus.id;
@@ -812,6 +850,21 @@ export class BonusService {
                 transaction.description = existingBonus.name+" awarded"
                 const transactionResult = await this.transactionsRepository.save(transaction)
 
+                // revert the stake
+                let creditPayload = {
+                    amount: bonusAmount,
+                    userId: data.userId,
+                    clientId: data.clientId,
+                    description: existingBonus.name + " awarded",
+                    subject: 'New Bonus',
+                    source: 'mobile',
+                    wallet: 'sport-bonus',
+                    channel: 'Internal',
+                    username: data.username
+                }
+
+                await this.walletService.credit(creditPayload).toPromise();
+
                 return {
                     status: 201,
                     description: "bonus awarded successfully",
@@ -830,7 +883,38 @@ export class BonusService {
                     let userId = parseInt(usr)
                     existingUserBonus.user_id = userId
 
-                    await this.userBonusRepository.save(existingUserBonus)
+                    const bonusResult = await this.userBonusRepository.save(existingUserBonus);
+
+                    if (data.promoCode)
+                    this.trackierService.createCustomer(data);
+
+                    // create transaction
+                    let transaction =  new Transactions()
+                    transaction.client_id = data.clientId
+                    transaction.user_id = parseInt(data.userId)
+                    transaction.amount = bonusAmount
+                    transaction.balance = bonusAmount;
+                    transaction.user_bonus_id = bonusResult.id
+                    transaction.transaction_type = TRANSACTION_TYPE_CREDIT
+                    transaction.reference_type = REFERENCE_TYPE_BONUS
+                    transaction.reference_id = bonusResult.id
+                    transaction.description = existingBonus.name+" awarded"
+                    const transactionResult = await this.transactionsRepository.save(transaction)
+
+                    // revert the stake
+                    let creditPayload = {
+                        amount: bonusAmount,
+                        userId: data.userId,
+                        clientId: data.clientId,
+                        description: existingBonus.name + " awarded",
+                        subject: 'New Bonus',
+                        source: 'mobile',
+                        wallet: 'sport-bonus',
+                        channel: 'Internal',
+                        username: data.username
+                    }
+
+                    await this.walletService.credit(creditPayload).toPromise();
                 }
 
                 return {
@@ -1223,7 +1307,7 @@ export class BonusService {
                 bon.minimumSelection = bonus.minimum_selection
                 bon.minimumEntryAmount = bonus.minimum_entry_amount
                 bon.bonusAmount = bonus.bonus_amount
-                bon.bonusAmountMultiplier = bonus.id
+                bon.minimumSelection = bonus.minimum_selection
                 bon.rolloverCount = bonus.rollover_count
                 bon.name = bonus.name
                 bon.maxAmount = bonus.max_amount
@@ -1283,7 +1367,7 @@ export class BonusService {
                 bon.minimumSelection = bonus.minimum_selection
                 bon.minimumEntryAmount = bonus.minimum_entry_amount
                 bon.bonusAmount = bonus.bonus_amount
-                bon.bonusAmountMultiplier = bonus.id
+                bon.minimumSelection = bonus.minimum_selection
                 bon.rolloverCount = bonus.rollover_count
                 bon.name = bonus.name
                 bon.maxAmount = bonus.max_amount

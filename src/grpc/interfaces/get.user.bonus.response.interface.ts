@@ -32,3 +32,16 @@ export interface UserBonus {
 export interface GetUserBonusResponse {
     bonus: UserBonus[];
 }
+
+export interface CheckFirstDepositResponse {
+    success: boolean;
+    message: string;
+    data?: FirstDepositData
+}
+
+interface FirstDepositData {
+    bonusId: number, 
+    value: number,
+    type: string;
+    name: string;
+}

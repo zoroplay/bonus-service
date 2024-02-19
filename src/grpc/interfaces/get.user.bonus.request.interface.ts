@@ -5,3 +5,8 @@ export interface GetUserBonusRequest {
     id?: number;
     status?: number;
 }
+
+export interface CheckFirstDepositRequest {
+    clientId: number;
+    userId: number;
+}

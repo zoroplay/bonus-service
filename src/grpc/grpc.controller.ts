@@ -1,12 +1,12 @@
 import {Controller} from "@nestjs/common";
 import { GrpcMethod} from "@nestjs/microservices";
-import {GetUserBonusRequest} from "./interfaces/get.user.bonus.request.interface";
+import {CheckFirstDepositRequest, GetUserBonusRequest} from "./interfaces/get.user.bonus.request.interface";
 import {CreateBonusRequest} from "./interfaces/create.bonus.request.interface";
 import {CreateBonusResponse} from "./interfaces/create.bonus.response.interface";
 import {GetBonusRequest} from "./interfaces/get.bonus.request.interface";
 import {GetBonusResponse} from "./interfaces/get.bonus.response.interface";
 import {DeleteBonusResponse} from "./interfaces/delete.bonus.response.interface";
-import {GetUserBonusResponse} from "./interfaces/get.user.bonus.response.interface";
+import {CheckFirstDepositResponse, GetUserBonusResponse} from "./interfaces/get.user.bonus.response.interface";
 import {AwardBonusRequest} from "./interfaces/award.bonus.request.interface";
 import {UserBonusResponse} from "./interfaces/user.bonus.response.interface";
 import {BonusService} from "./services/bonus.service";
@@ -104,6 +104,11 @@ export class GrpcController  {
     @GrpcMethod('BonusService', 'GetUserBonus')
     GetUserBonus(data: GetUserBonusRequest): Promise<GetUserBonusResponse> {
         return this.bonusService.userBonus(data)
+    }
+
+    @GrpcMethod('BonusService', 'CheckFirstDeposit')
+    CheckFirstDeposit(data: CheckFirstDepositRequest): Promise<CheckFirstDepositResponse> {
+        return this.bonusService.checkFirstDepositBonus(data)
     }
 
     @GrpcMethod('BonusService', 'AwardBonus')

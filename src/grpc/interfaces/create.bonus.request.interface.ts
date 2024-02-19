@@ -10,13 +10,12 @@ export interface CreateBonusRequest {
     minimumTotalOdds: number;
     applicableBetType: string;
     maximumWinning: number;
-
     minimumLostGames: number;
     minimumSelection: number;
     resetIntervalType: string;
     minimumEntryAmount: number;
     bonusAmount: number;
-    bonusAmountMultiplier: number;
+    // bonusAmountMultiplier: number;
     rolloverCount: number;
     name: string;
     creditType: string;
