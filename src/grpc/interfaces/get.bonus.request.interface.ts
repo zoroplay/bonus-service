@@ -1,4 +1,4 @@
 export interface GetBonusRequest {
     clientId: number;
-    bonusType: string;
+    id: number;
 }
