@@ -14,7 +14,7 @@ export interface BetSlipSelection {
 }
 
 export interface UserBet {
-    betslip: BetSlipSelection[];
+    selections: BetSlipSelection[];
     clientId: number;
     userId: number;
     stake: number;

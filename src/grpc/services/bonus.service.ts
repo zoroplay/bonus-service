@@ -741,8 +741,6 @@ export class BonusService {
             if (userBonus)
                 return {success: false, message: 'Bonus already used'};
 
-            
-
             return {success: true, message: 'Bonus available', data: {
                 bonusId: bonus.id,
                 value: bonus.bonus_amount,

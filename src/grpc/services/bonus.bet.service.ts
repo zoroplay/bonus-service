@@ -85,7 +85,7 @@ export class BonusBetService  implements OnModuleInit{
                 }
             }
 
-            if (data.betslip.length == 0) {
+            if (data.selections.length == 0) {
 
                 return {
                     success: false,
@@ -118,7 +118,7 @@ export class BonusBetService  implements OnModuleInit{
             let existingBonus = await this.bonusRepository.findOne({
                 where: {
                     client_id: data.clientId,
-                    id: data.bonusId,
+                    id: userBonus.bonus_id,
                     status: 1
                 }
             });
@@ -162,19 +162,19 @@ export class BonusBetService  implements OnModuleInit{
 
                 return {
                     success: false,
-                    message: "Your stake of "+data.stake+" is below the minimum betting stake for this bonus. Place a bet with a stake of at least "+existingBonus.minimum_entry_amount,
+                    message: "The minimum stake to use this bonus is "+existingBonus.minimum_entry_amount,
                     id: 0
                 }
             }
 
             // check if user qualifies for bonus
-            if(existingBonus.minimum_selection < data.betslip.length) {
+            if(existingBonus.minimum_selection > data.selections.length) {
 
                 this.logger.error("minimum_events rule violated")
 
                 return {
                     success: false,
-                    message: "You need atleast "+existingBonus.minimum_selection+" events to use this bonus",
+                    message: "The minimum selections must be "+existingBonus.minimum_selection+" events and above to use this bonus",
                     id: 0
                 }
             }
@@ -183,7 +183,7 @@ export class BonusBetService  implements OnModuleInit{
             //2. odds validation
             let selections = [];
             let totalOdds = 1;
-            let userSelection = data.betslip
+            let userSelection = data.selections
 
             for (const selection of userSelection) {
 
@@ -193,7 +193,7 @@ export class BonusBetService  implements OnModuleInit{
 
                     return {
                         success: false,
-                        message: "You need at least odds of "+existingBonus.minimum_odds_per_event+" for each event to use this bonus",
+                        message: "Each selections mush have a minimum of "+existingBonus.minimum_odds_per_event+" odds to use this bonus",
                         id: 0
                     }
                 }
@@ -234,7 +234,8 @@ export class BonusBetService  implements OnModuleInit{
             return {success: true, id: userBonus.bonus_id, message: 'successful'}
            
         } catch (e) {
-            return {success: false, id: 0, message: 'Error validating bonus bet'}
+            console.log(e.message);
+            return {success: false, id: 0, message: 'Error validating bonus bet '}
         }
     }
     
