@@ -239,7 +239,6 @@ export class BonusBetService  implements OnModuleInit{
     }
     
     async placeBet(data: UserBet): Promise<PlaceBetResponse> {
-
         // check if this bonus exists
         let userBonus = await this.userBonusRepository.findOne({
             where: {
@@ -262,7 +261,7 @@ export class BonusBetService  implements OnModuleInit{
         // let pending_amount = userBonus.pending_amount  - data.stake;
         // let rolled_amount = userBonus.rolled_amount + data.stake;
         let balance = userBonus.balance - data.stake;
-
+        console.log(balance);
         // deduct bonus
         await this.userBonusRepository.update(
             {
@@ -273,7 +272,7 @@ export class BonusBetService  implements OnModuleInit{
                 // rolled_amount: rolled_amount,
                 // pending_amount: pending_amount,
                 balance,
-                used_amount: userBonus.used_amount + data.stake,
+                used_amount: parseFloat(userBonus.used_amount.toString()) + parseFloat(data.stake.toString()),
             });
 
         // create bet
@@ -292,18 +291,20 @@ export class BonusBetService  implements OnModuleInit{
         const bonusBetResult = await this.bonusBetRepository.save(bonusBet)
 
         // create transaction
-        let transaction =  new Transactions()
-        transaction.client_id = data.clientId
-        transaction.user_id = data.userId
-        transaction.amount = data.stake
-        transaction.balance = balance;
-        transaction.user_bonus_id = userBonus.id
-        transaction.transaction_type = TRANSACTION_TYPE_DEBIT
-        transaction.reference_type = REFERENCE_TYPE_PLACEBET
-        transaction.reference_id = bonusBetResult.id
-        transaction.description = "Customer placed a bet using "+existingBonus.name+" bonus"
+        let transaction                 = new Transactions()
+        transaction.client_id           = data.clientId
+        transaction.user_id             = data.userId
+        transaction.amount              = data.stake
+        transaction.balance             = balance;
+        transaction.user_bonus_id       = userBonus.id
+        transaction.transaction_type    = TRANSACTION_TYPE_DEBIT
+        transaction.reference_type      = REFERENCE_TYPE_PLACEBET
+        transaction.reference_id        = bonusBetResult.id
+        transaction.description         = "Customer placed a bet using "+existingBonus.name+" bonus"
+        
         const transactionResult = await this.transactionsRepository.save(transaction)
 
+        console.log('bonus bet placed')
         return {
             betId: data.betId,
             status: 200,

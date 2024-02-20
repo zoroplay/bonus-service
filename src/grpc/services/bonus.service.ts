@@ -165,6 +165,7 @@ export class BonusService {
         if (data.clientId == 0) {
 
             return {
+                success: false,
                 bonusId: 0,
                 status: 401,
                 description: "missing client ID"
@@ -225,6 +226,7 @@ export class BonusService {
             const bonusResult = await this.bonusRepository.save(bonus)
 
             return {
+                success: false,
                 bonusId: bonusResult.id,
                 status: 201,
                 description: "Bonus created successfully",
@@ -334,6 +336,7 @@ export class BonusService {
         if (data.clientId == 0) {
 
             return {
+                success: false,
                 bonusId: 0,
                 status: 401,
                 description: "missing client ID"
@@ -352,6 +355,7 @@ export class BonusService {
         if (bonus === null || bonus.id === null || bonus.id === 0) {
 
             return {
+                success: false,
                 bonusId: 0,
                 status: 401,
                 description: "Bonus type does not exists"
@@ -387,6 +391,7 @@ export class BonusService {
             )
 
             return {
+                success: false,
                 bonusId: bonus.id,
                 status: 201,
                 description: "Bonus updated successfully",
@@ -406,6 +411,7 @@ export class BonusService {
         if (data.clientId == 0) {
 
             return {
+                success: false,
                 bonusId: 0,
                 status: 401,
                 description: "missing client ID"
@@ -415,6 +421,7 @@ export class BonusService {
         if (data.bonusType.length == 0) {
 
             return {
+                success: false,
                 bonusId: 0,
                 status: 401,
                 description: "missing bonus type"
@@ -433,6 +440,7 @@ export class BonusService {
         if (bonus === null || bonus.id === null || bonus.id === 0) {
 
             return {
+                success: false,
                 bonusId: 0,
                 status: 401,
                 description: "Bonus type does not exists"
@@ -451,6 +459,7 @@ export class BonusService {
             )
 
             return {
+                success: true,
                 bonusId: bonus.id,
                 status: 201,
                 description: "Bonus updated successfully",
@@ -469,16 +478,18 @@ export class BonusService {
         if (data.clientId == 0) {
 
             return {
+                success: false,
                 status: 401,
                 description: "missing client ID"
             }
         }
 
-        if (data.bonusType.length == 0) {
+        if (data.id == 0) {
 
             return {
+                success: false,
                 status: 401,
-                description: "missing bonus type"
+                description: "missing bonus id"
             }
         }
 
@@ -487,13 +498,14 @@ export class BonusService {
         let bonus = await this.bonusRepository.findOne({
             where: {
                 client_id: data.clientId,
-                bonus_type: data.bonusType,
+                id: data.id,
             }
         });
 
         if (bonus === null || bonus.id === null || bonus.id === 0) {
 
             return {
+                success: false,
                 status: 401,
                 description: "Bonus type does not exists"
             }
@@ -508,6 +520,7 @@ export class BonusService {
             )
 
             return {
+                success: true,
                 status: 201,
                 description: "Bonus deleted successfully",
             }
@@ -515,7 +528,11 @@ export class BonusService {
         } catch (e) {
 
             this.logger.error(" error deleting bonus " + e.toString())
-            throw e
+            return {
+                success: false,
+                status: 501,
+                description: " error deleting bonus " + e.toString(),
+            }
         }
 
     }
@@ -640,7 +657,8 @@ export class BonusService {
                     where: {
                         user_id: parseInt(""+data.userId),
                         client_id: parseInt(""+data.clientId),
-                    }
+                    },
+                    order: {created: 'DESC'}
                 });
             }
 
@@ -664,7 +682,8 @@ export class BonusService {
                 let transactions = await this.transactionsRepository.find({
                     where: {
                         user_bonus_id: bon.id
-                    }
+                    },
+                    order: {created: 'DESC'}
                 })
 
                 let bonusTrans = [] as BonusTransaction[]
@@ -805,9 +824,9 @@ export class BonusService {
 
         let bonusAmount = data.amount
 
-        // if(data.baseValue > 0 ) {
-        //     bonusAmount = data.baseValue * existingBonus.bonus_amount_multiplier
-        // }
+        if(bonusAmount > existingBonus.max_amount ) {
+            bonusAmount = existingBonus.max_amount;
+        }
 
         existingUserBonus.client_id = data.clientId
         existingUserBonus.bonus_id = existingBonus.id;
@@ -946,6 +965,7 @@ export class BonusService {
         if (data.clientId == 0) {
 
             return {
+                success: false,
                 bonusId: 0,
                 status: 401,
                 description: "missing client ID"
@@ -955,6 +975,7 @@ export class BonusService {
         if (data.bonusCode.length == 0 ) {
 
             return {
+                success: false,
                 bonusId: 0,
                 status: 401,
                 description: "missing bonus code"
@@ -964,6 +985,7 @@ export class BonusService {
         if (data.name.length == 0 ) {
 
             return {
+                success: false,
                 bonusId: 0,
                 status: 401,
                 description: "missing bonus name"
@@ -973,6 +995,7 @@ export class BonusService {
         if (data.startDate.length == 0 ) {
 
             return {
+                success: false,
                 bonusId: 0,
                 status: 401,
                 description: "missing bonus start date"
@@ -983,6 +1006,7 @@ export class BonusService {
         if (data.endDate.length == 0 ) {
 
             return {
+                success: false,
                 bonusId: 0,
                 status: 401,
                 description: "missing bonus end date"
@@ -1001,6 +1025,7 @@ export class BonusService {
         if (existingBonus !== null && existingBonus.id !== null && existingBonus.id > 0) {
 
             return {
+                success: false,
                 bonusId: existingBonus.id,
                 status: 401,
                 description: "Bonus code exists"
@@ -1029,6 +1054,7 @@ export class BonusService {
                 }
             }
             return {
+                success: true,
                 bonusId: bonusResult.id,
                 status: 201,
                 description,
@@ -1047,6 +1073,7 @@ export class BonusService {
         if (data.clientId == 0) {
 
             return {
+                success: false,
                 bonusId: 0,
                 status: 401,
                 description: "missing client ID"
@@ -1056,6 +1083,7 @@ export class BonusService {
         if (data.id == 0) {
 
             return {
+                success: false,
                 bonusId: 0,
                 status: 401,
                 description: "missing  ID"
@@ -1065,6 +1093,7 @@ export class BonusService {
         if (data.bonusCode.length == 0 ) {
 
             return {
+                success: false,
                 bonusId: 0,
                 status: 401,
                 description: "missing bonus code"
@@ -1074,6 +1103,7 @@ export class BonusService {
         if (data.name.length == 0 ) {
 
             return {
+                success: false,
                 bonusId: 0,
                 status: 401,
                 description: "missing bonus name"
@@ -1083,6 +1113,7 @@ export class BonusService {
         if (data.startDate.length == 0 ) {
 
             return {
+                success: false,
                 bonusId: 0,
                 status: 401,
                 description: "missing bonus start date"
@@ -1101,6 +1132,7 @@ export class BonusService {
         if (existingBonus === null || existingBonus.id === null || existingBonus.id === 0) {
 
             return {
+                success: false,
                 bonusId: existingBonus.id,
                 status: 401,
                 description: "Bonus does not  exists"
@@ -1125,6 +1157,7 @@ export class BonusService {
             );
 
             return {
+                success: true,
                 bonusId:0,
                 status: 201,
                 description: "campaign bonus updated successfully",
@@ -1143,6 +1176,7 @@ export class BonusService {
         if (data.clientId == 0) {
 
             return {
+                success: false,
                 bonusId: 0,
                 status: 401,
                 description: "missing client ID"
@@ -1152,6 +1186,7 @@ export class BonusService {
         if (data.bonusCode.length == 0 ) {
 
             return {
+                success: false,
                 bonusId: 0,
                 status: 401,
                 description: "missing bonus code"
@@ -1161,6 +1196,7 @@ export class BonusService {
         if (data.userId == 0) {
 
             return {
+                success: false,
                 bonusId: 0,
                 status: 401,
                 description: "missing client ID"
@@ -1183,6 +1219,7 @@ export class BonusService {
         if (existingBonus !== null && existingBonus.id !== null && existingBonus.id > 0) {
 
             return {
+                success: false,
                 bonusId: existingBonus.id,
                 status: 401,
                 description: "Bonus code exists or is expired"
@@ -1200,6 +1237,7 @@ export class BonusService {
         if (existingUserBonus !== null && existingUserBonus.id !== null && existingUserBonus.id > 0) {
 
             return {
+                success: false,
                 bonusId: existingBonus.id,
                 status: 401,
                 description: "Bonus code already redeemed"
@@ -1216,6 +1254,7 @@ export class BonusService {
         let res = await this.awardBonus(request)
 
         return {
+            success: true,
             bonusId: res.bonus,
             status: res.status,
             description: res.description,
@@ -1228,6 +1267,7 @@ export class BonusService {
         if (data.clientId == 0) {
 
             return {
+                success: false,
                 bonusId: 0,
                 status: 401,
                 description: "missing client ID"
@@ -1237,6 +1277,7 @@ export class BonusService {
         if (data.id == 0) {
 
             return {
+                success: false,
                 bonusId: 0,
                 status: 401,
                 description: "missing bonus ID"
@@ -1253,6 +1294,7 @@ export class BonusService {
 
 
             return {
+                success: true,
                 bonusId: 0,
                 status: 201,
                 description: "campaign bonus deleted successfully",
