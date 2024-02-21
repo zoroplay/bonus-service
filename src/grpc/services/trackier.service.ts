@@ -21,7 +21,7 @@ export class TrackierService {
         return axios.post(
             `${this.baseUrl}/oauth/access-refresh-token`,
             {
-                auth_code: process.env.TRACKIER_AUTH_CODE,
+                auth_code: "$2a$04$geRYyxPlSFlL6uMVUQNgnOV0YvXQB4cr3usXLfp7b0WzZHpky61nO",
             },
         );
     }
