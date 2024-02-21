@@ -36,6 +36,7 @@ import {Bonusbet} from "../../entity/bonusbet.entity";
 import { TrackierService } from "./trackier.service";
 import dayjs = require("dayjs");
 import { WalletService } from "src/wallet/wallet.service";
+import { IdentityService } from "src/identity/identity.service";
 
 export class BonusService {
 
@@ -59,7 +60,9 @@ export class BonusService {
 
         private trackierService: TrackierService,
 
-        private walletService: WalletService
+        private walletService: WalletService,
+
+        private identityService: IdentityService
 
     ) {
 
@@ -741,6 +744,19 @@ export class BonusService {
             if (userBonus)
                 return {success: false, message: 'Bonus already used'};
 
+            // get user details
+            const userRes = await this.identityService.getDetails({
+                userId: param.userId, 
+                clientId: param.clientId
+            }).toPromise();
+
+            if (userRes.success) {
+                let user = userRes.data;
+
+                if (dayjs(user.registered).isBefore(bonus.created))
+                    return {success: false, message: 'Not applicable'}
+            }
+            
             return {success: true, message: 'Bonus available', data: {
                 bonusId: bonus.id,
                 value: bonus.bonus_amount,

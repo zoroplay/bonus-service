@@ -18,9 +18,11 @@ import {Transactions} from "../entity/transactions.entity";
 import { TrackierService } from './services/trackier.service';
 import { BonusBetService } from "./services/bonus.bet.service";
 import { WalletModule } from "src/wallet/wallet.module";
+import { IdentityModule } from "src/identity/identity.module";
 
 @Module({
     imports: [
+        IdentityModule,
         WalletModule,
         TypeOrmModule.forFeature([Bonus,Firstdeposit,Freebet,Lostbet,Referral,Sharebet,Userbonus,Cashback,Bonusbet,Campaignbonus,Transactions]),
         ClientsModule.register([
