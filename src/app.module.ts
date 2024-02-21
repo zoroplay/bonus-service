@@ -19,7 +19,6 @@ import {Userbonus} from "./entity/userbonus.entity";
 import {Bonusbet} from "./entity/bonusbet.entity";
 import {Campaignbonus} from "./entity/campaignbonus.entity";
 import {Transactions} from "./entity/transactions.entity";
-import { WalletModule } from './wallet/wallet.module';
 
 @Module({
     imports: [
@@ -45,7 +44,6 @@ import { WalletModule } from './wallet/wallet.module';
           //entities: [__dirname + '/ ** / *.entity{.ts,.js}'],
           synchronize: true,
         }),
-        WalletModule,
     ],
     controllers: [AppController],
     providers: [AppService],
