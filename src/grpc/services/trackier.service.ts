@@ -17,7 +17,7 @@ export class TrackierService {
     ) {}
 
     async getAccessToken() {
-        console.log('AUTH CODE', process.env.TRACKIER_AUTH_CODE)
+        // console.log('AUTH CODE', process.env.TRACKIER_AUTH_CODE)
         return axios.post(
             `${this.baseUrl}/oauth/access-refresh-token`,
             {
@@ -80,7 +80,7 @@ export class TrackierService {
                 
             if (authRes.status) {
                 const payload = {
-                    customerId: `${data.userId}-${data.clientId}`,
+                    customerId: data.username,
                     customerName: data.username,
                     date: dayjs().format('YYYY-MM-DD'),
                     timestamp: dayjs().unix(),
@@ -90,7 +90,7 @@ export class TrackierService {
                     productId: '1',
                 }
 
-                const resp = await axios.post(
+                return await axios.post(
                     `${this.baseUrl}/customer`, payload,
                     {
                         headers: {
