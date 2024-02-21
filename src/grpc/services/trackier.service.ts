@@ -17,6 +17,7 @@ export class TrackierService {
     ) {}
 
     async getAccessToken() {
+        console.log('AUTH CODE', process.env.TRACKIER_AUTH_CODE)
         return axios.post(
             `${this.baseUrl}/oauth/access-refresh-token`,
             {
@@ -51,6 +52,10 @@ export class TrackierService {
             if (!authRes.status) {
                 console.log('Error sending trackier result', authRes);
             }
+
+            console.log(payload)
+
+            console.log('API KEY', process.env.TRACKIER_API_KEY)
 
             const resp = await axios.post(
                 `${this.baseUrl}/coupon`, payload,
