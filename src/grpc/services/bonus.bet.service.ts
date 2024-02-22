@@ -184,10 +184,8 @@ export class BonusBetService  implements OnModuleInit{
             let selections = [];
             let totalOdds = 1;
             let userSelection = data.selections
-
             for (const selection of userSelection) {
-
-                if(existingBonus.minimum_odds_per_event > 0 && existingBonus.minimum_odds_per_event < selection.odds) {
+                if(existingBonus.minimum_odds_per_event > 0 && existingBonus.minimum_odds_per_event > selection.odds) {
 
                     this.logger.error("minimum_odds_per_event rule violated")
 
@@ -216,11 +214,10 @@ export class BonusBetService  implements OnModuleInit{
 
                 totalOdds = totalOdds * selection.odds
             }
-
             if (selections.length === 0)
                 return {success: false, message: "missing selections", id: 0};
 
-            if(existingBonus.minimum_total_odds > 0 && existingBonus.minimum_total_odds < totalOdds) {
+            if(existingBonus.minimum_total_odds > 0 && existingBonus.minimum_total_odds > totalOdds) {
 
                 this.logger.error("minimum_total_odds rule violated")
 
