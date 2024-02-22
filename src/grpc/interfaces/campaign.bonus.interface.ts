@@ -19,6 +19,8 @@ export interface UpdateCampaignBonusDto {
     bonusId: number;
     startDate: string;
     endDate: string;
+    affiliateIds?: string;
+    trackierCampaignId?: string
 }
 
 export interface RedeemCampaignBonusDto {
