@@ -243,7 +243,6 @@ export class BonusService {
     }
 
     async update(data: CreateBonusRequest): Promise<CreateBonusResponse> {
-        
         let bonusType = data.bonusType
 
         // if(bonusType === BONUS_TYPE_FIRST_DEPOSIT) {
@@ -566,7 +565,7 @@ export class BonusService {
                     "id": b.id,
                     "clientId": b.client_id,
                     "bonusType": b.bonus_type,
-                    // "minimumStake": b.minimum_stake,
+                    "minimumLostGames": b.minimum_lost_games,
                     "duration": b.duration,
                     "maxAmount": b.max_amount,
                     "minimumOddsPerEvent": b.minimum_odds_per_event,
