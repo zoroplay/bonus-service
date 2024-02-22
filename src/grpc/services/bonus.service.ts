@@ -756,7 +756,7 @@ export class BonusService {
                 if (dayjs(user.registered).isBefore(bonus.created))
                     return {success: false, message: 'Not applicable'}
             }
-            
+
             return {success: true, message: 'Bonus available', data: {
                 bonusId: bonus.id,
                 value: bonus.bonus_amount,
@@ -1056,6 +1056,8 @@ export class BonusService {
         campaign.start_date = data.startDate
         campaign.end_date = data.endDate
         campaign.name = data.name
+        campaign.trackier_affiliate_ids = data.affiliateIds
+        campaign.trackier_campaign_id = data.trackierCampaignId
 
         try {
             let description = 'campaign bonus created successfully'

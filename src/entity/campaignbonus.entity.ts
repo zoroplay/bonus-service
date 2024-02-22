@@ -38,6 +38,14 @@ export class Campaignbonus {
     end_date: string;
 
     @Index()
+    @Column({ type: "varchar", nullable: true })
+    trackier_campaign_id: string;
+
+    @Index()
+    @Column({ type: "varchar", nullable: true })
+    trackier_affiliate_ids: string;
+
+    @Index()
     @CreateDateColumn()
     created: string;
 
