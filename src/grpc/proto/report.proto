@@ -1,0 +1,45 @@
+syntax = "proto3";
+
+package report;
+
+service BonusService {
+    rpc fetchReport (FetchReportRequest) returns (FetchReportResponse){}
+}
+
+
+message FetchReportRequest {
+    string bonusType = 1;
+    string from = 2;
+    string to = 3;
+}
+
+message UserBetData {
+    int32 betId = 1;
+    float stake = 2;
+    int32 rolloverCount = 3;
+    int32 status = 4;
+    int32 rolledAmount = 5;
+    int32 pendingAmount = 6;
+    string created = 7;
+}     
+
+message UserBonus {
+    string bonusType = 1;
+    float amount = 2;
+    int32 expiryDateInTimestamp = 3;
+    string created = 4;
+    int32 id = 5;
+    string name = 6;
+    float rolledAmount = 7;
+    float pendingAmount = 8;
+    int32 totalRolloverCount = 9;
+    int32 completedRolloverCount = 10;
+    repeated UserBetData bets = 11;
+}
+      
+message FetchReportResponse {
+    string description = 1;
+    int32 status = 2;
+    repeated UserBonus bonus = 3;
+}
+      

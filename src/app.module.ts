@@ -19,6 +19,7 @@ import {Userbonus} from "./entity/userbonus.entity";
 import {Bonusbet} from "./entity/bonusbet.entity";
 import {Campaignbonus} from "./entity/campaignbonus.entity";
 import {Transactions} from "./entity/transactions.entity";
+import { ReportModule } from './report/report.module';
 
 @Module({
     imports: [
@@ -44,6 +45,7 @@ import {Transactions} from "./entity/transactions.entity";
           //entities: [__dirname + '/ ** / *.entity{.ts,.js}'],
           synchronize: true,
         }),
+        ReportModule,
     ],
     controllers: [AppController],
     providers: [AppService],
