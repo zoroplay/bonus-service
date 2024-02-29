@@ -3,7 +3,7 @@ syntax = "proto3";
 package report;
 
 service BonusService {
-    rpc fetchReport (FetchReportRequest) returns (FetchReportResponse){}
+    rpc fetchBonusReport (FetchReportRequest) returns (FetchReportResponse){}
 }
 
 
@@ -38,8 +38,8 @@ message UserBonus {
 }
       
 message FetchReportResponse {
-    string description = 1;
-    int32 status = 2;
-    repeated UserBonus bonus = 3;
+    string message = 1;
+    bool status = 2;
+    repeated UserBonus data = 3;
 }
       
