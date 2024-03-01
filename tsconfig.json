@@ -16,10 +16,6 @@
     "noImplicitAny": false,
     "strictBindCallApply": false,
     "forceConsistentCasingInFileNames": false,
-    "noFallthroughCasesInSwitch": false,
-    "lib": [
-      "es2021.full",
-      "webworker"
-    ]
+    "noFallthroughCasesInSwitch": false
   }
 }

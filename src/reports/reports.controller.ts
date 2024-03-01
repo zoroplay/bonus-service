@@ -1,14 +1,15 @@
 import { Controller } from '@nestjs/common';
 import { GrpcMethod } from '@nestjs/microservices';
 import { ReportsService } from './reports.service';
-import { FetchReportRequest, WALLET_SERVICE_NAME } from 'src/wallet/wallet.pb';
+import { FetchReportRequest } from 'src/grpc/dto/bonus.dto';
 
 @Controller()
 export class ReportsController {
   constructor(private readonly reportsService: ReportsService) {}
 
-  @GrpcMethod(WALLET_SERVICE_NAME, 'fetchBonusReport')
+  @GrpcMethod('BonusService', 'fetchBonusReport')
   fetchBonusReport(payload: FetchReportRequest) {
+    console.log('FetchBonusReport');
     return this.reportsService.fetchBonus(payload);
   }
 }
