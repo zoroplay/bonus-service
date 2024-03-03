@@ -18,7 +18,7 @@ export class ReportsService {
   ) {}
 
   async fetchBonus(data: FetchReportRequest) {
-    let userBonus;
+    let userBonus = [];
     switch (data.bonusType) {
       case 'all':
         userBonus = await this.userBonusRepository.find({
@@ -31,6 +31,7 @@ export class ReportsService {
           description: 'your bonus report',
           data: userBonus,
         };
+
       case data.bonusType:
         userBonus = await this.userBonusRepository.find({
           where: {
@@ -40,7 +41,7 @@ export class ReportsService {
         });
         return {
           status: true,
-          description: 'your bonus report',
+          message: 'your bonus report',
           data: userBonus,
         };
     }
