@@ -9,7 +9,7 @@ export class ReportsController {
 
   @GrpcMethod('BonusService', 'fetchBonusReport')
   fetchBonusReport(payload: FetchReportRequest) {
-    console.log('FetchBonusReport');
+    console.log('FetchBonusReport', 12356, payload);
     return this.reportsService.fetchBonus(payload);
   }
 }
