@@ -4,6 +4,7 @@ export interface FetchReportRequest {
   bonusType: string;
   from: string;
   to: string;
+  clientID: number;
 }
 
 export interface FetchReportResponse {

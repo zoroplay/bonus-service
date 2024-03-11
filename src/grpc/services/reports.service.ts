@@ -5,7 +5,6 @@ import { DepositService } from 'src/consumers/workers/deposit.service';
 import { Userbonus } from 'src/entity/userbonus.entity';
 import { FetchReportRequest } from 'src/grpc/dto/bonus.dto';
 import { Repository, Between } from 'typeorm';
-import { bonusTypes } from '../../../gateway-service/src/bonus/dto/index';
 
 @Injectable()
 export class ReportsService {
@@ -19,7 +18,6 @@ export class ReportsService {
   ) {}
 
   async fetchBonus(data: FetchReportRequest) {
-    console.log(data);
     let userBonus = [];
     switch (data.bonusType) {
       case 'all':
@@ -31,20 +29,25 @@ export class ReportsService {
         let alluserBonus = userBonus.map((bonus) => {
           return {
             ...bonus,
-            wagering_requirement: bonus.rollover_count,
-            wagering_requirement_remaining: bonus.pending_amount,
-            wagering_requirement_achieved:
+            userId: bonus.user_id,
+            clientId: bonus.client_id,
+            bonusId: bonus.bonus_id,
+            bonusType: bonus.bonus_type,
+            expiryDate: bonus.expiry_date,
+            usedAmount: bonus.used_amount,
+            wageringRequirement: bonus.rollover_count,
+            wageringRequirementRemaining: bonus.pending_amount,
+            wageringRequirementAchieved:
               bonus.rollover_count - bonus.completed_rollover_count,
           };
         });
         return {
           status: true,
-          description: 'your bonus report',
+          message: 'your bonus report',
           data: alluserBonus,
         };
 
       case data.bonusType:
-        console.log(data.bonusType);
         userBonus = await this.userBonusRepository.find({
           where: {
             bonus_type: data.bonusType,
@@ -54,15 +57,21 @@ export class ReportsService {
         let newuserBonus = userBonus.map((bonus) => {
           return {
             ...bonus,
-            wagering_requirement: bonus.rollover_count,
-            wagering_requirement_remaining: bonus.pending_amount,
-            wagering_requirement_achieved:
+            userId: bonus.user_id,
+            clientId: bonus.client_id,
+            bonusId: bonus.bonus_id,
+            bonusType: bonus.bonus_type,
+            expiryDate: bonus.expiry_date,
+            usedAmount: bonus.used_amount,
+            wageringRequirement: bonus.rollover_count,
+            wageringRequirementRemaining: bonus.pending_amount,
+            wageringRequirementAchieved:
               bonus.rollover_count - bonus.completed_rollover_count,
           };
         });
         return {
           status: true,
-          description: 'your bonus report',
+          message: 'your bonus report',
           data: newuserBonus,
         };
     }
