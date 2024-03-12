@@ -49,10 +49,7 @@
     "node-expat": "^2.4.0",
     "reflect-metadata": "^0.1.13",
     "rxjs": "^7.8.1",
-<<<<<<< HEAD
     "sbe-service-proto": "git+https://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:x-oauth-basic@github.com/zoroplay/sbe-service-proto.git",
-=======
->>>>>>> efd9446f9e44ea91f8cb3d80fb57d77443ae594e
     "typeorm": "^0.3.17",
     "xml2json": "^0.12.0"
   },
