@@ -26,10 +26,25 @@ export class ReportsService {
             created: Between(data.from, data.to),
           },
         });
+        let alluserBonus = userBonus.map((bonus) => {
+          return {
+            ...bonus,
+            userId: bonus.user_id,
+            clientId: bonus.client_id,
+            bonusId: bonus.bonus_id,
+            bonusType: bonus.bonus_type,
+            expiryDate: bonus.expiry_date,
+            usedAmount: bonus.used_amount,
+            wageringRequirement: bonus.rollover_count,
+            wageringRequirementRemaining: bonus.pending_amount,
+            wageringRequirementAchieved:
+              bonus.rollover_count - bonus.completed_rollover_count,
+          };
+        });
         return {
           status: true,
-          description: 'your bonus report',
-          data: userBonus,
+          message: 'your bonus report',
+          data: alluserBonus,
         };
 
       case data.bonusType:
@@ -39,10 +54,25 @@ export class ReportsService {
             created: Between(data.from, data.to),
           },
         });
+        let newuserBonus = userBonus.map((bonus) => {
+          return {
+            ...bonus,
+            userId: bonus.user_id,
+            clientId: bonus.client_id,
+            bonusId: bonus.bonus_id,
+            bonusType: bonus.bonus_type,
+            expiryDate: bonus.expiry_date,
+            usedAmount: bonus.used_amount,
+            wageringRequirement: bonus.rollover_count,
+            wageringRequirementRemaining: bonus.pending_amount,
+            wageringRequirementAchieved:
+              bonus.rollover_count - bonus.completed_rollover_count,
+          };
+        });
         return {
           status: true,
           message: 'your bonus report',
-          data: userBonus,
+          data: newuserBonus,
         };
     }
   }

@@ -19,7 +19,6 @@ import { Userbonus } from './entity/userbonus.entity';
 import { Bonusbet } from './entity/bonusbet.entity';
 import { Campaignbonus } from './entity/campaignbonus.entity';
 import { Transactions } from './entity/transactions.entity';
-import { ReportsModule } from './reports/reports.module';
 import { WalletModule } from './wallet/wallet.module';
 
 @Module({
@@ -63,7 +62,6 @@ import { WalletModule } from './wallet/wallet.module';
       Userbonus,
       Transactions
     ]),
-    ReportsModule,
     WalletModule
   ],
   controllers: [AppController],
