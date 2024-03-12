@@ -6,7 +6,7 @@ export interface GetUserBonusRequest {
     status?: number;
 }
 
-export interface CheckFirstDepositRequest {
+export interface CheckDepositBonusRequest {
     clientId: number;
     userId: number;
 }

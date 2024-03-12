@@ -1,6 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { GetUserDetailsRequest, IDENTITY_SERVICE_NAME, IdentityServiceClient, protobufPackage } from './identity.pb';
 import { ClientGrpc } from '@nestjs/microservices';
+import { firstValueFrom } from 'rxjs';
 
 @Injectable()
 export class IdentityService {
@@ -14,7 +15,7 @@ export class IdentityService {
     }
 
 
-    public getDetails(param: GetUserDetailsRequest) {
-      return this.svc.getUserDetails(param);
+    public async getDetails(param: GetUserDetailsRequest) {
+      return await firstValueFrom(this.svc.getUserDetails(param));
     }
 }

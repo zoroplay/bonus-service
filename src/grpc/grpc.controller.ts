@@ -1,12 +1,12 @@
 import {Controller} from "@nestjs/common";
 import { GrpcMethod} from "@nestjs/microservices";
-import {CheckFirstDepositRequest, GetUserBonusRequest} from "./interfaces/get.user.bonus.request.interface";
+import {CheckDepositBonusRequest, GetUserBonusRequest} from "./interfaces/get.user.bonus.request.interface";
 import {CreateBonusRequest} from "./interfaces/create.bonus.request.interface";
 import {CreateBonusResponse} from "./interfaces/create.bonus.response.interface";
 import {GetBonusRequest} from "./interfaces/get.bonus.request.interface";
 import {GetBonusResponse} from "./interfaces/get.bonus.response.interface";
 import {DeleteBonusResponse} from "./interfaces/delete.bonus.response.interface";
-import {CheckFirstDepositResponse, GetUserBonusResponse} from "./interfaces/get.user.bonus.response.interface";
+import {CheckDepositBonusResponse, GetUserBonusResponse} from "./interfaces/get.user.bonus.response.interface";
 import {AwardBonusRequest} from "./interfaces/award.bonus.request.interface";
 import {UserBonusResponse} from "./interfaces/user.bonus.response.interface";
 import {BonusService} from "./services/bonus.service";
@@ -44,48 +44,6 @@ export class GrpcController  {
         return this.bonusService.update(data)
     }
 
-    // @GrpcMethod('BonusService', 'CreateFirstDepositBonus')
-    // CreateFirstDepositBonus(data: CreateBonusRequest): Promise<CreateBonusResponse> {
-    //     return this.bonusService.create(data, BONUS_TYPE_FIRST_DEPOSIT)
-    // }
-
-    // @GrpcMethod('BonusService', 'UpdateFirstDepositBonus')
-    // UpdateFirstDepositBonus(data: CreateBonusRequest): Promise<CreateBonusResponse> {
-    //     return this.bonusService.update(data, BONUS_TYPE_FIRST_DEPOSIT)
-    // }
-
-    // @GrpcMethod('BonusService', 'CreateFreebetBonus')
-    // CreateFreebetBonus(data: CreateBonusRequest): Promise<CreateBonusResponse> {
-    //     return this.bonusService.create(data, BONUS_TYPE_FREEBET)
-    // }
-
-    // @GrpcMethod('BonusService', 'UpdateFreebetBonus')
-    // UpdateFreebetBonus(data: CreateBonusRequest): Promise<CreateBonusResponse> {
-
-    //     return this.bonusService.update(data, BONUS_TYPE_FREEBET)
-
-    // }
-
-    // @GrpcMethod('BonusService', 'CreateReferralBonus')
-    // CreateReferralBonus(data: CreateBonusRequest): Promise<CreateBonusResponse> {
-    //     return this.bonusService.create(data, BONUS_TYPE_REFERRAL)
-    // }
-
-    // @GrpcMethod('BonusService', 'UpdateReferralBonus')
-    // UpdateReferralBonus(data: CreateBonusRequest): Promise<CreateBonusResponse> {
-    //     return this.bonusService.update(data, BONUS_TYPE_REFERRAL)
-    // }
-
-    // @GrpcMethod('BonusService', 'CreateShareBetBonus')
-    // CreateShareBetBonus(data: CreateBonusRequest): Promise<CreateBonusResponse> {
-    //     return this.bonusService.create(data, BONUS_TYPE_SHARE_BET)
-    // }
-
-    // @GrpcMethod('BonusService', 'UpdateShareBetBonus')
-    // UpdateShareBetBonus(data: CreateBonusRequest): Promise<CreateBonusResponse> {
-    //     return this.bonusService.update(data, BONUS_TYPE_SHARE_BET)
-    // }
-
     @GrpcMethod('BonusService', 'GetBonus')
     GetBonus(data: GetBonusRequest): Promise<GetBonusResponse> {
         return this.bonusService.all(data)
@@ -106,9 +64,9 @@ export class GrpcController  {
         return this.bonusService.userBonus(data)
     }
 
-    @GrpcMethod('BonusService', 'CheckFirstDeposit')
-    CheckFirstDeposit(data: CheckFirstDepositRequest): Promise<CheckFirstDepositResponse> {
-        return this.bonusService.checkFirstDepositBonus(data)
+    @GrpcMethod('BonusService', 'CheckDepositBonus')
+    CheckFirstDeposit(data: CheckDepositBonusRequest): Promise<CheckDepositBonusResponse> {
+        return this.bonusService.checkDepositBonus(data)
     }
 
     @GrpcMethod('BonusService', 'AwardBonus')
