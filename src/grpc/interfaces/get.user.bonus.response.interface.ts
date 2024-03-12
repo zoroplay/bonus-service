@@ -33,7 +33,7 @@ export interface GetUserBonusResponse {
     bonus: UserBonus[];
 }
 
-export interface CheckFirstDepositResponse {
+export interface CheckDepositBonusResponse {
     success: boolean;
     message: string;
     data?: FirstDepositData

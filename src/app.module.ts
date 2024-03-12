@@ -19,6 +19,7 @@ import { Userbonus } from './entity/userbonus.entity';
 import { Bonusbet } from './entity/bonusbet.entity';
 import { Campaignbonus } from './entity/campaignbonus.entity';
 import { Transactions } from './entity/transactions.entity';
+import { WalletModule } from './wallet/wallet.module';
 
 @Module({
   imports: [
@@ -56,6 +57,12 @@ import { Transactions } from './entity/transactions.entity';
       //entities: [__dirname + '/ ** / *.entity{.ts,.js}'],
       synchronize: true,
     }),
+    TypeOrmModule.forFeature([
+      Bonus,
+      Userbonus,
+      Transactions
+    ]),
+    WalletModule
   ],
   controllers: [AppController],
   providers: [AppService],

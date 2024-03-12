@@ -7,8 +7,8 @@ import {GetBonusRequest} from "../interfaces/get.bonus.request.interface";
 import {DeleteBonusResponse} from "../interfaces/delete.bonus.response.interface";
 import {GetBonusResponse} from "../interfaces/get.bonus.response.interface";
 import {Userbonus} from "../../entity/userbonus.entity";
-import {GetUserBonusRequest} from "../interfaces/get.user.bonus.request.interface";
-import {BonusTransaction, CheckFirstDepositResponse, GetUserBonusResponse, UserBonus} from "../interfaces/get.user.bonus.response.interface";
+import {CheckDepositBonusRequest, GetUserBonusRequest} from "../interfaces/get.user.bonus.request.interface";
+import {BonusTransaction, CheckDepositBonusResponse, GetUserBonusResponse, UserBonus} from "../interfaces/get.user.bonus.response.interface";
 import {AwardBonusRequest} from "../interfaces/award.bonus.request.interface";
 import {UserBonusResponse} from "../interfaces/user.bonus.response.interface";
 import {Repository} from "typeorm"
@@ -722,48 +722,82 @@ export class BonusService {
 
     }
 
-    async checkFirstDepositBonus(param): Promise<CheckFirstDepositResponse> {
+    async checkDepositBonus(param: CheckDepositBonusRequest): Promise<CheckDepositBonusResponse> {
         try {
+            let success, message, data;
             // find first_deposit bonus
-            const bonus = await this.bonusRepository.findOne({where: {bonus_type: 'first_deposit'}});
-
-            if (!bonus)
-                return {success: false, message: 'Bonus not found'};
-
-            if (bonus && bonus.status !== 1)
-                return {success: false, message: 'Bonus not active'};
-
-            // check if user has been awarded first_deposit bonus before
-            const userBonus = await this.userBonusRepository.findOne({where: {
-                user_id: param.userId,
-                client_id: param.clientId,
-                bonus_id: bonus.id,
-            }})
-
-            if (userBonus)
-                return {success: false, message: 'Bonus already used'};
+            const firstDeposit = await this.bonusRepository.findOne({where: {bonus_type: 'first_deposit', status: 1}});
+            const deposit = await this.bonusRepository.findOne({where: {bonus_type: 'deposit', status: 1}});
 
             // get user details
             const userRes = await this.identityService.getDetails({
                 userId: param.userId, 
                 clientId: param.clientId
-            }).toPromise();
+            });
 
             if (userRes.success) {
+
                 let user = userRes.data;
 
-                if (dayjs(user.registered).isBefore(bonus.created))
-                    return {success: false, message: 'Not applicable'}
+                if (firstDeposit){ 
+                    if (dayjs(user.registered).isBefore(firstDeposit.created)){
+                        success = false; 
+                        message = 'Not applicable'
+                    } else {
+                        // check if user has been awarded first_deposit bonus before
+                        const userBonus = await this.userBonusRepository.findOne({where: {
+                            user_id: param.userId,
+                            client_id: param.clientId,
+                            bonus_id: firstDeposit.id,
+                        }});
+                        if (userBonus) {
+                            success = false; 
+                            message = 'Bonus already used'
+                        } else {
+                            success = true;
+                            message = 'Bonus available',
+                            data = {
+                                bonusId: firstDeposit.id,
+                                value: firstDeposit.bonus_amount,
+                                type: firstDeposit.credit_type,
+                                name: firstDeposit.name
+                            }
+
+                            return {success, message, data};
+                        }
+                    }
+                }
+
+                if (deposit) {
+                    // check if user has been awarded first_deposit bonus before
+                    const userBonus = await this.userBonusRepository.findOne({where: {
+                        user_id: param.userId,
+                        client_id: param.clientId,
+                        bonus_id: deposit.id,
+                    }})
+
+                    if (userBonus) {
+                      success = false; 
+                      message = 'Bonus already used'
+                    } else {
+                        success = true;
+                        message = 'Bonus available',
+                        data = {
+                            bonusId: deposit.id,
+                            value: deposit.bonus_amount,
+                            type: deposit.credit_type,
+                            name: deposit.name
+                        }
+
+                        return {success, message, data};
+                    }
+                }
             }
 
-            return {success: true, message: 'Bonus available', data: {
-                bonusId: bonus.id,
-                value: bonus.bonus_amount,
-                type: bonus.credit_type,
-                name: bonus.name
-            } };
+            return {success, message, data};
 
         } catch(e) {
+            console.log(e.message)
             return {success: false, message: 'Bonus request failed: ' + e.message};
         }
     }
@@ -880,7 +914,8 @@ export class BonusService {
                 transaction.reference_type = REFERENCE_TYPE_BONUS
                 transaction.reference_id = bonusResult.id
                 transaction.description = existingBonus.name+" awarded"
-                const transactionResult = await this.transactionsRepository.save(transaction)
+                
+                await this.transactionsRepository.save(transaction)
 
                 // revert the stake
                 let creditPayload = {
@@ -931,7 +966,8 @@ export class BonusService {
                     transaction.reference_type = REFERENCE_TYPE_BONUS
                     transaction.reference_id = bonusResult.id
                     transaction.description = existingBonus.name+" awarded"
-                    const transactionResult = await this.transactionsRepository.save(transaction)
+                    
+                    await this.transactionsRepository.save(transaction)
 
                     // revert the stake
                     let creditPayload = {
