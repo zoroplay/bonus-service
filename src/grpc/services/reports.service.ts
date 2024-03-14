@@ -26,6 +26,7 @@ export class ReportsService {
             created: Between(data.from, data.to),
           },
         });
+        
         let alluserBonus = userBonus.map((bonus) => {
           return {
             ...bonus,

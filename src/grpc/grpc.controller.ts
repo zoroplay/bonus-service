@@ -10,7 +10,7 @@ import {CheckDepositBonusResponse, GetUserBonusResponse} from "./interfaces/get.
 import {AwardBonusRequest} from "./interfaces/award.bonus.request.interface";
 import {UserBonusResponse} from "./interfaces/user.bonus.response.interface";
 import {BonusService} from "./services/bonus.service";
-import {UserBet} from "./interfaces/user.bet.interface";
+import {SettleBet, UserBet} from "./interfaces/user.bet.interface";
 import {BonusStatusRequest} from "./interfaces/bonus.status.request.interface";
 
 import {
@@ -128,5 +128,10 @@ export class GrpcController {
   @GrpcMethod('BonusService', 'ValidateBetSelections')
   ValidateBetSelections(data: UserBet): Promise<any> {
     return this.bonusBetService.validateBet(data);
+  }
+
+  @GrpcMethod('BonusService', 'SettleBet')
+  SettleBet(data: SettleBet): Promise<any> {
+    return this.bonusBetService.settleBet(data);
   }
 }
