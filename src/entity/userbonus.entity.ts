@@ -71,6 +71,10 @@ export class Userbonus {
     promoCode: string;
 
     @Index()
+    @Column({type:"tinyint", nullable: false, default: 0 })
+    can_redeem: number;
+
+    @Index()
     @CreateDateColumn()
     created: string;
 

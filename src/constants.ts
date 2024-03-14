@@ -21,4 +21,5 @@ export const BET_LOST = 1
 export const BET_WON = 2
 export const BET_VOIDED = 3
 export const BET_CANCELLED = -1
+export const BET_WINNING_ROLLBACK = 5
 

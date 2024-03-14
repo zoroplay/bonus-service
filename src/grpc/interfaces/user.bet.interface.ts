@@ -30,3 +30,10 @@ export interface ValidateBetResponse{
     id: number;
     message: string;
 }
+
+export interface SettleBet {
+    clientId: number;
+    betId: number;
+    status: number;
+    amount?: number;
+}

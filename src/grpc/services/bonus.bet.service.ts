@@ -1,39 +1,23 @@
-import { Inject, Injectable, OnModuleInit } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Bonus } from 'src/entity/bonus.entity';
 import { Repository } from 'typeorm';
 import * as dayjs from 'dayjs';
-import { UserBet, ValidateBetResponse } from '../interfaces/user.bet.interface';
+import { SettleBet, UserBet, ValidateBetResponse } from '../interfaces/user.bet.interface';
 import { JsonLogger, LoggerFactory } from 'json-logger-service';
-import { ClientGrpc } from '@nestjs/microservices';
-import OddsService, {
-    GetOddsReply,
-    GetOddsRequest,
-    ProducerstatusreplyInterface
-} from "../interfaces/odds.service.interface";
-import BettingService, {PlaceBetRequest, PlaceBetResponse} from "../interfaces/betting.service.interface";
+import {PlaceBetResponse} from "../interfaces/betting.service.interface";
 import { Userbonus } from 'src/entity/userbonus.entity';
 import { Transactions } from 'src/entity/transactions.entity';
 import { Bonusbet } from 'src/entity/bonusbet.entity';
-import { BonusService } from './bonus.service';
-import { BET_PENDING, REFERENCE_TYPE_PLACEBET, TRANSACTION_TYPE_DEBIT } from 'src/constants';
+import { BET_CANCELLED, BET_PENDING, BET_VOIDED, BET_WINNING_ROLLBACK, BET_WON, REFERENCE_TYPE_CANCELBET, REFERENCE_TYPE_PLACEBET, REFERENCE_TYPE_WONBET, TRANSACTION_TYPE_CREDIT, TRANSACTION_TYPE_DEBIT } from 'src/constants';
 
 @Injectable()
-export class BonusBetService  implements OnModuleInit{
+export class BonusBetService {
 
 
-    private oddsService: OddsService;
-    private bettingService: BettingService;
     private readonly logger: JsonLogger = LoggerFactory.createLogger(BonusBetService.name);
 
     constructor(
-        private readonly bonusService: BonusService,
-
-        @Inject('FEEDS_SERVICE')
-        private readonly oddsClient: ClientGrpc,
-
-        @Inject('BETTING_SERVICE')
-        private readonly client: ClientGrpc,
 
         @InjectRepository(Bonus)
         private bonusRepository: Repository<Bonus>,
@@ -47,13 +31,6 @@ export class BonusBetService  implements OnModuleInit{
         @InjectRepository(Bonusbet)
         private bonusBetRepository: Repository<Bonusbet>,
     ) {}
-
-    onModuleInit(): any {
-
-        this.oddsService = this.oddsClient.getService<OddsService>('Odds');
-        this.bettingService = this.client.getService<BettingService>('BettingService');
-
-    }
 
     async validateBet(data: UserBet): Promise<ValidateBetResponse> {
         try {
@@ -237,80 +214,172 @@ export class BonusBetService  implements OnModuleInit{
     }
     
     async placeBet(data: UserBet): Promise<PlaceBetResponse> {
+
         // check if this bonus exists
         let userBonus = await this.userBonusRepository.findOne({
             where: {
-                id: data.bonusId,
+                bonus_id: data.bonusId,
                 user_id: data.userId,
                 status: 1
             }
         });
 
-        // check if this bonus exists
-        let existingBonus = await this.bonusRepository.findOne({
-            where: {
-                client_id: data.clientId,
-                id: data.bonusId,
-                status: 1
-            }
-        });
+        if (userBonus) {
 
-        // let rollover_count = userBonus.completed_rollover_count + 1;
-        // let pending_amount = userBonus.pending_amount  - data.stake;
-        // let rolled_amount = userBonus.rolled_amount + data.stake;
-        let balance = userBonus.balance - data.stake;
-        console.log(balance);
-        // deduct bonus
-        await this.userBonusRepository.update(
-            {
-                id: userBonus.id,
-            },
-            {
-                // completed_rollover_count: rollover_count,
-                // rolled_amount: rolled_amount,
-                // pending_amount: pending_amount,
-                balance,
-                used_amount: parseFloat(userBonus.used_amount.toString()) + parseFloat(data.stake.toString()),
+            // check if this bonus exists
+            let existingBonus = await this.bonusRepository.findOne({
+                where: {
+                    client_id: data.clientId,
+                    id: data.bonusId,
+                    status: 1
+                }
             });
 
-        // create bet
-        let bonusBet = new Bonusbet();
-        bonusBet.bet_id = data.betId
-        bonusBet.user_id = data.userId
-        bonusBet.client_id = data.clientId
-        bonusBet.bonus_type = existingBonus.bonus_type
-        bonusBet.stake = data.stake
-        bonusBet.status = BET_PENDING
-        bonusBet.user_bonus_id = userBonus.id
-        // bonusBet.rollover_count = rollover_count
-        // bonusBet.rolled_amount = rolled_amount
-        // bonusBet.pending_amount = pending_amount
-        
-        const bonusBetResult = await this.bonusBetRepository.save(bonusBet)
+            let rollover_count = userBonus.completed_rollover_count + 1;
+            // let pending_amount = userBonus.pending_amount  - data.stake;
+            let rolled_amount = parseFloat(userBonus.used_amount.toString()) + parseFloat(data.stake.toString());
+            let balance = userBonus.balance - data.stake;
+            // console.log(balance);
+            // deduct bonus
+            await this.userBonusRepository.update(
+                {
+                    id: userBonus.id,
+                },
+                {
+                    completed_rollover_count: rollover_count,
+                    rolled_amount,
+                    // pending_amount,
+                    balance,
+                    used_amount: parseFloat(userBonus.used_amount.toString()) + parseFloat(data.stake.toString()),
+                });
 
-        // create transaction
-        let transaction                 = new Transactions()
-        transaction.client_id           = data.clientId
-        transaction.user_id             = data.userId
-        transaction.amount              = data.stake
-        transaction.balance             = balance;
-        transaction.user_bonus_id       = userBonus.id
-        transaction.transaction_type    = TRANSACTION_TYPE_DEBIT
-        transaction.reference_type      = REFERENCE_TYPE_PLACEBET
-        transaction.reference_id        = bonusBetResult.id
-        transaction.description         = "Customer placed a bet using "+existingBonus.name+" bonus"
-        
-        const transactionResult = await this.transactionsRepository.save(transaction)
+            // create bet
+            let bonusBet = new Bonusbet();
+            bonusBet.bet_id = data.betId
+            bonusBet.user_id = data.userId
+            bonusBet.client_id = data.clientId
+            bonusBet.bonus_type = existingBonus.bonus_type
+            bonusBet.stake = data.stake
+            bonusBet.status = BET_PENDING
+            bonusBet.user_bonus_id = userBonus.id
+            // bonusBet.rollover_count = rollover_count
+            // bonusBet.rolled_amount = rolled_amount
+            // bonusBet.pending_amount = pending_amount
+            
+            const bonusBetResult = await this.bonusBetRepository.save(bonusBet)
 
-        console.log('bonus bet placed')
-        return {
-            betId: data.betId,
-            status: 200,
-            statusDescription: "Bonus recorded successfully",
+            // create transaction
+            let transaction                 = new Transactions()
+            transaction.client_id           = data.clientId
+            transaction.user_id             = data.userId
+            transaction.amount              = data.stake
+            transaction.balance             = balance;
+            transaction.user_bonus_id       = userBonus.id
+            transaction.transaction_type    = TRANSACTION_TYPE_DEBIT
+            transaction.reference_type      = REFERENCE_TYPE_PLACEBET
+            transaction.reference_id        = bonusBetResult.id
+            transaction.description         = "Customer placed a bet using "+existingBonus.name+" bonus"
+            
+            await this.transactionsRepository.save(transaction)
+
+            console.log('bonus bet placed')
+            
+            return {
+                betId: data.betId,
+                status: 200,
+                statusDescription: "Bonus recorded successfully",
+            }
+        } else {
+            return {
+                betId: data.betId,
+                status: 404,
+                statusDescription: "Bonus not found",
+            }
         }
+    }
 
-        
+    async settleBet(data: SettleBet) {
+        try {
+            const bet = await this.bonusBetRepository.findOne({where: {id: data.betId}});
 
+            if (bet) {
+                const bonus = await this.userBonusRepository.findOne({where: {
+                    id: bet.user_bonus_id,
+                }})
+
+                const amount = data.amount - bet.stake;
+                // const completed_rollover_count = bonus.completed_rollover_count + 1;
+                let can_redeem = 0;
+
+                if (bonus.completed_rollover_count === bonus.rollover_count && bonus.pending_amount === 0) {
+                    can_redeem = 1;
+                }
+                // update bet status
+                await this.bonusBetRepository.update(
+                    {
+                        bet_id: data.betId,
+                    }, {
+                        status: data.status
+                    }
+                );
+
+                if (data.status === BET_WON) {
+                    // create transaction
+                    let transaction                 = new Transactions()
+                    transaction.client_id           = data.clientId
+                    transaction.user_id             = bet.user_id
+                    transaction.amount              = amount
+                    transaction.balance             = amount
+                    transaction.user_bonus_id       = bonus.id
+                    transaction.transaction_type    = TRANSACTION_TYPE_CREDIT
+                    transaction.reference_type      = REFERENCE_TYPE_WONBET
+                    transaction.reference_id        = bet.id
+                    transaction.description         = "Customer won a bet using "+bonus.name+" bonus"
+                    //save transactions
+                    await this.transactionsRepository.save(transaction);
+
+                    // update bonus status
+                    await this.userBonusRepository.update(
+                        {
+                            id: bonus.bonus_id
+                        },{
+                            balance: amount,
+                            can_redeem,
+                        }
+                    )
+
+                } else if (data.status === BET_CANCELLED || data.status === BET_VOIDED || data.status === BET_WINNING_ROLLBACK) {
+                    // create transaction
+                    let transaction                 = new Transactions()
+                    transaction.client_id           = data.clientId
+                    transaction.user_id             = bet.user_id
+                    transaction.amount              = bet.stake
+                    transaction.balance             = bet.stake + bonus.balance;
+                    transaction.user_bonus_id       = bonus.id
+                    transaction.transaction_type    = TRANSACTION_TYPE_CREDIT
+                    transaction.reference_type      = REFERENCE_TYPE_CANCELBET
+                    transaction.reference_id        = bet.id
+                    transaction.description         = data.status === BET_WINNING_ROLLBACK ? "Winning rollback" : "Bet was cancelled"
+                    //save transactions
+                    await this.transactionsRepository.save(transaction);
+
+                    // update bonus status
+                    await this.userBonusRepository.update(
+                        {
+                            id: bonus.bonus_id
+                        },{
+                            balance: bonus.balance + bet.stake,
+                            pending_amount: bonus.pending_amount + bet.stake,
+                            completed_rollover_count: bonus.completed_rollover_count - 1,
+                            rolled_amount: bonus.rolled_amount - bet.stake,
+                            used_amount: bonus.used_amount - bet.stake
+                        }
+                    )
+                }
+            }
+        } catch (e) {
+            console.log(e.message);
+        }
     }
    
 }
