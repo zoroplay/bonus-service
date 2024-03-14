@@ -24,9 +24,10 @@ export class ReportsService {
         userBonus = await this.userBonusRepository.find({
           where: {
             created: Between(data.from, data.to),
+            client_id: data.clientID
           },
         });
-        
+
         let alluserBonus = userBonus.map((bonus) => {
           return {
             ...bonus,
@@ -53,6 +54,7 @@ export class ReportsService {
           where: {
             bonus_type: data.bonusType,
             created: Between(data.from, data.to),
+            client_id: data.clientID
           },
         });
         let newuserBonus = userBonus.map((bonus) => {

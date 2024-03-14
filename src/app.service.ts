@@ -25,7 +25,6 @@ export class AppService {
   ) {}
 
   @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT)
-  // @Timeout(10000)
   async checkExpiredBonus() {
     console.log('running cronjob to check expiry')
     try {
@@ -71,7 +70,7 @@ export class AppService {
 
         // console.log(debitPayload)
 
-        await this.walletService.debit(debitPayload).toPromise();
+        await this.walletService.debit(debitPayload);
 
       }
 
