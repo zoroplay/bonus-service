@@ -930,7 +930,7 @@ export class BonusService {
                     username: data.username
                 }
 
-                await this.walletService.credit(creditPayload).toPromise();
+                await this.walletService.credit(creditPayload);
 
                 return {
                     status: 201,
@@ -982,7 +982,7 @@ export class BonusService {
                         username: data.username
                     }
 
-                    await this.walletService.credit(creditPayload).toPromise();
+                    await this.walletService.credit(creditPayload);
                 }
 
                 return {
