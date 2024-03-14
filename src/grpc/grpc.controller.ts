@@ -132,6 +132,7 @@ export class GrpcController {
 
   @GrpcMethod('BonusService', 'SettleBet')
   SettleBet(data: SettleBet): Promise<any> {
+    console.log('Settle bet');
     return this.bonusBetService.settleBet(data);
   }
 }

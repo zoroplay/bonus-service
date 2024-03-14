@@ -300,7 +300,7 @@ export class BonusBetService {
 
     async settleBet(data: SettleBet) {
         try {
-            const bet = await this.bonusBetRepository.findOne({where: {id: data.betId}});
+            const bet = await this.bonusBetRepository.findOne({where: {bet_id: data.betId}});
 
             if (bet) {
                 const bonus = await this.userBonusRepository.findOne({where: {
@@ -341,7 +341,7 @@ export class BonusBetService {
                     // update bonus status
                     await this.userBonusRepository.update(
                         {
-                            id: bonus.bonus_id
+                            id: bonus.id
                         },{
                             balance: amount,
                             can_redeem,
@@ -366,7 +366,7 @@ export class BonusBetService {
                     // update bonus status
                     await this.userBonusRepository.update(
                         {
-                            id: bonus.bonus_id
+                            id: bonus.id
                         },{
                             balance: bonus.balance + bet.stake,
                             pending_amount: bonus.pending_amount + bet.stake,
