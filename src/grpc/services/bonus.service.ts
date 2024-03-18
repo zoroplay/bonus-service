@@ -37,6 +37,7 @@ import { TrackierService } from "./trackier.service";
 import dayjs = require("dayjs");
 import { WalletService } from "src/wallet/wallet.service";
 import { IdentityService } from "src/identity/identity.service";
+import { HttpStatus } from "@nestjs/common";
 
 export class BonusService {
 
@@ -945,20 +946,37 @@ export class BonusService {
 
             } else {
 
+                let i = 0;
+                const usernames = data.username.split(',')
                 for (const usr of parts) {
-
                     let userId = parseInt(usr)
+                    let existingUserBonus = new Userbonus();
+
+                    existingUserBonus.client_id = data.clientId
+                    existingUserBonus.bonus_id = existingBonus.id;
+                    existingUserBonus.bonus_type = existingBonus.bonus_type
+                    existingUserBonus.amount = bonusAmount;
+                    existingUserBonus.balance = bonusAmount;
+                    existingUserBonus.expiry_date = expiry;
+                    existingUserBonus.rollover_count = existingBonus.rollover_count
+                    existingUserBonus.pending_amount = bonusAmount * existingBonus.rollover_count
+                    existingUserBonus.rolled_amount = 0
+                    existingUserBonus.completed_rollover_count = 0
+                    existingUserBonus.name = existingBonus.name;
+                    existingUserBonus.promoCode = data.promoCode;
                     existingUserBonus.user_id = userId
+                    existingUserBonus.username = usernames[i];
+                    existingUserBonus.status = 0;
 
                     const bonusResult = await this.userBonusRepository.save(existingUserBonus);
 
                     if (data.promoCode)
-                    this.trackierService.createCustomer(data);
+                        this.trackierService.createCustomer(data);
 
                     // create transaction
                     let transaction =  new Transactions()
                     transaction.client_id = data.clientId
-                    transaction.user_id = parseInt(data.userId)
+                    transaction.user_id = userId
                     transaction.amount = bonusAmount
                     transaction.balance = bonusAmount;
                     transaction.user_bonus_id = bonusResult.id
@@ -969,24 +987,29 @@ export class BonusService {
                     
                     await this.transactionsRepository.save(transaction)
 
-                    // revert the stake
-                    let creditPayload = {
-                        amount: bonusAmount,
-                        userId: data.userId,
-                        clientId: data.clientId,
-                        description: existingBonus.name + " awarded",
-                        subject: 'New Bonus',
-                        source: 'mobile',
-                        wallet: 'sport-bonus',
-                        channel: 'Internal',
-                        username: data.username
+                    // send bonus credit
+                    if (existingBonus.credit_type !== 'flat') {
+                        
+                        let creditPayload = {
+                            amount: bonusAmount,
+                            userId: userId,
+                            clientId: data.clientId,
+                            description: existingBonus.name + " awarded",
+                            subject: 'New Bonus',
+                            source: 'mobile',
+                            wallet: 'sport-bonus',
+                            channel: 'Internal',
+                            username: usernames[i]
+                        }
+
+                        await this.walletService.credit(creditPayload);
                     }
 
-                    await this.walletService.credit(creditPayload);
+                    i++;
                 }
 
                 return {
-                    status: 201,
+                    status: HttpStatus.OK,
                     description: "bonus awarded successfully",
                     bonus: {
                         bonusType: existingUserBonus.bonus_type,
