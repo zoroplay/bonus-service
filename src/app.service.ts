@@ -55,23 +55,22 @@ export class AppService {
         await this.transactionsRepository.save(transaction);
 
         let debitPayload = {
-            // currency: clientSettings.currency,
-            amount: bonus.balance,
-            userId: bonus.user_id,
-            username: bonus.username,
-            clientId: bonus.client_id,
-            subject: "Bonus Expired",
-            description: `${bonus.name} expired`,
-            source: 'internal',
-            wallet: 'sport-bonus',
-            channel: 'Internal'
-            // transaction_type: TRANSACTION_TYPE_PLACE_BET
+          // currency: clientSettings.currency,
+          amount: bonus.balance,
+          userId: bonus.user_id,
+          username: bonus.username,
+          clientId: bonus.client_id,
+          subject: "Bonus Expired",
+          description: `${bonus.name} expired`,
+          source: 'internal',
+          wallet: 'sport-bonus',
+          channel: 'Internal'
+          // transaction_type: TRANSACTION_TYPE_PLACE_BET
         }
 
         // console.log(debitPayload)
 
         await this.walletService.debit(debitPayload);
-
       }
 
     } catch (e) {
