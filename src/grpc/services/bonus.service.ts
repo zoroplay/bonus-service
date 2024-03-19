@@ -988,7 +988,7 @@ export class BonusService {
                     await this.transactionsRepository.save(transaction)
 
                     // send bonus credit
-                    if (existingBonus.credit_type !== 'flat') {
+                    if (existingBonus.credit_type === 'flat') {
                         
                         let creditPayload = {
                             amount: bonusAmount,
