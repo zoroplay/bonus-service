@@ -849,6 +849,8 @@ export class BonusService {
             }
         }
 
+        console.log(data.bonusId);
+
         let existingBonus : Bonus = await this.bonusRepository.findOne({
             where: {
                 id: data.bonusId,
@@ -918,7 +920,6 @@ export class BonusService {
                 
                 await this.transactionsRepository.save(transaction)
 
-                // revert the stake
                 let creditPayload = {
                     amount: bonusAmount,
                     userId: data.userId,
@@ -932,6 +933,7 @@ export class BonusService {
                 }
 
                 await this.walletService.credit(creditPayload);
+            
 
                 return {
                     status: 201,
@@ -966,7 +968,6 @@ export class BonusService {
                     existingUserBonus.promoCode = data.promoCode;
                     existingUserBonus.user_id = userId
                     existingUserBonus.username = usernames[i];
-                    existingUserBonus.status = 0;
 
                     const bonusResult = await this.userBonusRepository.save(existingUserBonus);
 
@@ -988,23 +989,21 @@ export class BonusService {
                     await this.transactionsRepository.save(transaction)
 
                     // send bonus credit
-                    if (existingBonus.credit_type === 'flat') {
                         
-                        let creditPayload = {
-                            amount: bonusAmount,
-                            userId: userId,
-                            clientId: data.clientId,
-                            description: existingBonus.name + " awarded",
-                            subject: 'New Bonus',
-                            source: 'mobile',
-                            wallet: 'sport-bonus',
-                            channel: 'Internal',
-                            username: usernames[i]
-                        }
-
-                        await this.walletService.credit(creditPayload);
+                    let creditPayload = {
+                        amount: bonusAmount,
+                        userId: userId,
+                        clientId: data.clientId,
+                        description: existingBonus.name + " awarded",
+                        subject: 'New Bonus',
+                        source: 'mobile',
+                        wallet: 'sport-bonus',
+                        channel: 'Internal',
+                        username: usernames[i]
                     }
 
+                    await this.walletService.credit(creditPayload);
+                
                     i++;
                 }
 
