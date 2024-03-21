@@ -30,7 +30,7 @@ export class AppService {
     try {
       const date = dayjs().format('YYYY-MM-DD');
       const playerBonuses = await this.userBonusRepository.createQueryBuilder('bonus')  
-                .where('expiry_date < :date', {date})
+                .where('expiry_date <= :date', {date})
                 .andWhere('status = :status', {status: 1})
                 .getMany();
 
@@ -40,37 +40,40 @@ export class AppService {
           {id: bonus.id},
           {status: 2}
         );
-        // create transaction
-        let transaction                 = new Transactions()
-        transaction.client_id           = bonus.client_id
-        transaction.user_id             = bonus.user_id
-        transaction.amount              = bonus.balance
-        transaction.balance             = 0;
-        transaction.user_bonus_id       = bonus.id
-        transaction.transaction_type    = TRANSACTION_TYPE_DEBIT
-        transaction.reference_type      = REFERENCE_TYPE_WONBET
-        transaction.reference_id        = bonus.bonus_id
-        transaction.description         = `${bonus.name} expired`
-        
-        await this.transactionsRepository.save(transaction);
 
-        let debitPayload = {
-          // currency: clientSettings.currency,
-          amount: bonus.balance,
-          userId: bonus.user_id,
-          username: bonus.username,
-          clientId: bonus.client_id,
-          subject: "Bonus Expired",
-          description: `${bonus.name} expired`,
-          source: 'internal',
-          wallet: 'sport-bonus',
-          channel: 'Internal'
-          // transaction_type: TRANSACTION_TYPE_PLACE_BET
+        if (bonus.balance > 0) {
+          // create transaction
+          let transaction                 = new Transactions()
+          transaction.client_id           = bonus.client_id
+          transaction.user_id             = bonus.user_id
+          transaction.amount              = bonus.balance
+          transaction.balance             = 0;
+          transaction.user_bonus_id       = bonus.id
+          transaction.transaction_type    = TRANSACTION_TYPE_DEBIT
+          transaction.reference_type      = REFERENCE_TYPE_WONBET
+          transaction.reference_id        = bonus.bonus_id
+          transaction.description         = `${bonus.name} expired`
+          
+          await this.transactionsRepository.save(transaction);
+
+          let debitPayload = {
+            // currency: clientSettings.currency,
+            amount: bonus.balance,
+            userId: bonus.user_id,
+            username: bonus.username,
+            clientId: bonus.client_id,
+            subject: "Bonus Expired",
+            description: `${bonus.name} expired`,
+            source: 'internal',
+            wallet: 'sport-bonus',
+            channel: 'Internal'
+            // transaction_type: TRANSACTION_TYPE_PLACE_BET
+          }
+
+          // console.log(debitPayload)
+
+          await this.walletService.debit(debitPayload);
         }
-
-        // console.log(debitPayload)
-
-        await this.walletService.debit(debitPayload);
       }
 
     } catch (e) {
