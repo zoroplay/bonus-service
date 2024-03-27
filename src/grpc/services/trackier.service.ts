@@ -49,7 +49,7 @@ export class TrackierService {
 
             const authRes = await this.getAccessToken();
             
-            if (!authRes.status) {
+            if (!authRes.data.success) {
                 console.log('Error sending trackier result', authRes);
             }
 
@@ -78,7 +78,7 @@ export class TrackierService {
         try {
             const authRes = await this.getAccessToken();
                 
-            if (authRes.status) {
+            if (authRes.data.success) {
                 const payload = {
                     customerId: data.username,
                     customerName: data.username,
