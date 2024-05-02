@@ -1,5 +1,4 @@
 export interface BonusStatusRequest {
-    clientId: number;
-    bonusType: string;
+    bonusId: number;
     status: number;
 }
