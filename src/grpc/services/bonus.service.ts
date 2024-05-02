@@ -875,7 +875,10 @@ export class BonusService {
 
             if(parts.length === 1) {
 
-                let userId = parseInt(parts[0])
+                let userId = parseInt(parts[0]);
+
+                await this.deactivateUserBonus(userId);
+
                 existingUserBonus.user_id = userId
                 existingUserBonus.username = data.username
 
@@ -928,7 +931,10 @@ export class BonusService {
                 let i = 0;
                 const usernames = data.username.split(',')
                 for (const usr of parts) {
-                    let userId = parseInt(usr)
+                    let userId = parseInt(usr);
+                    // deactivate any active bonus
+                    await this.deactivateUserBonus(userId);
+
                     let existingUserBonus = new Userbonus();
 
                     existingUserBonus.client_id = data.clientId
@@ -969,7 +975,7 @@ export class BonusService {
                         userId: userId,
                         clientId: data.clientId,
                         description: existingBonus.name + " awarded",
-                        subject: 'New Bonus',
+                        subject: 'Bonus Awarded',
                         source: 'mobile',
                         wallet: 'sport-bonus',
                         channel: 'Internal',
@@ -1489,5 +1495,43 @@ export class BonusService {
         } catch (e) {
             return {success: false, message: 'Unable to fetch campaign', data: null}
         }
+    }
+
+    async deactivateUserBonus(userId) {
+        // get active bonus
+        const userBonus = await this.userBonusRepository.findOne({
+            where: {
+                user_id: userId,
+                status: 1
+            }
+        });
+
+        if (userBonus) {
+            // deactivate bonus to
+            await this.userBonusRepository.update(
+                {
+                    status: 1,
+                    user_id: userId
+                },{
+                    status: 2,
+                }
+            );
+
+            // debit remaining bonus amount from user balance
+            let debitPayload = {
+                amount: userBonus.balance,
+                userId: userId,
+                clientId: userBonus.client_id,
+                description: userBonus.name + " deactivated",
+                subject: 'Bonus Deactivated',
+                source: 'mobile',
+                wallet: 'sport-bonus',
+                channel: 'Internal',
+                username: userBonus.username
+            }
+
+            await this.walletService.debit(debitPayload);
+        }
+
     }
 }
