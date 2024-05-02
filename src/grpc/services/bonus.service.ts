@@ -826,7 +826,7 @@ export class BonusService {
             }
         }
 
-        console.log(data.bonusId);
+        // console.log(data.bonusId);
 
         let existingBonus : Bonus = await this.bonusRepository.findOne({
             where: {
@@ -851,9 +851,10 @@ export class BonusService {
 
         let bonusAmount = data.amount
 
-        if(bonusAmount > existingBonus.max_amount ) {
+        if(existingBonus.max_amount > 0 && bonusAmount > existingBonus.max_amount ) {
             bonusAmount = existingBonus.max_amount;
         }
+
 
         existingUserBonus.client_id = data.clientId
         existingUserBonus.bonus_id = existingBonus.id;
@@ -879,9 +880,6 @@ export class BonusService {
                 existingUserBonus.username = data.username
 
                 const bonusResult = await this.userBonusRepository.save(existingUserBonus);
-
-                if (data.promoCode)
-                    this.trackierService.createCustomer(data);
 
                 // create transaction
                 let transaction =  new Transactions()
@@ -910,7 +908,9 @@ export class BonusService {
                 }
 
                 await this.walletService.credit(creditPayload);
-            
+                // save trackier customer
+                if (data.promoCode)
+                    this.trackierService.createCustomer(data);
 
                 return {
                     status: 201,
@@ -948,9 +948,6 @@ export class BonusService {
 
                     const bonusResult = await this.userBonusRepository.save(existingUserBonus);
 
-                    if (data.promoCode)
-                        this.trackierService.createCustomer(data);
-
                     // create transaction
                     let transaction =  new Transactions()
                     transaction.client_id = data.clientId
@@ -980,6 +977,9 @@ export class BonusService {
                     }
 
                     await this.walletService.credit(creditPayload);
+                    // save trackier customer
+                    if (data.promoCode)
+                        this.trackierService.createCustomer(data);
                 
                     i++;
                 }
