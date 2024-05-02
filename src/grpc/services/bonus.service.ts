@@ -702,10 +702,11 @@ export class BonusService {
 
     async checkDepositBonus(param: CheckDepositBonusRequest): Promise<CheckDepositBonusResponse> {
         try {
+            console.log(param)
             let success, message, data;
             // find first_deposit bonus
-            const firstDeposit = await this.bonusRepository.findOne({where: {bonus_type: 'first_deposit', status: 1}});
-            const deposit = await this.bonusRepository.findOne({where: {bonus_type: 'deposit', status: 1}});
+            const firstDeposit = await this.bonusRepository.findOne({where: {bonus_type: 'first_deposit', status: 1, client_id: param.clientId}});
+            const deposit = await this.bonusRepository.findOne({where: {bonus_type: 'deposit', status: 1, client_id: param.clientId}});
 
             // get user details
             const userRes = await this.identityService.getDetails({
