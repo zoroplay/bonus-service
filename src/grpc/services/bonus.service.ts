@@ -409,34 +409,11 @@ export class BonusService {
 
     async status(data: BonusStatusRequest): Promise<CreateBonusResponse> {
 
-
-        // validations
-        if (data.clientId == 0) {
-
-            return {
-                success: false,
-                bonusId: 0,
-                status: 401,
-                description: "missing client ID"
-            }
-        }
-
-        if (data.bonusType.length == 0) {
-
-            return {
-                success: false,
-                bonusId: 0,
-                status: 401,
-                description: "missing bonus type"
-            }
-        }
-
         // check if this bonus exists
 
         let bonus = await this.bonusRepository.findOne({
             where: {
-                client_id: data.clientId,
-                bonus_type: data.bonusType,
+                id: data.bonusId,
             }
         });
 
@@ -1141,7 +1118,6 @@ export class BonusService {
     }
 
     async updateCampaignBonus(data: UpdateCampaignBonusDto): Promise<CreateBonusResponse> {
-
         // validations
         if (data.clientId == 0) {
 
@@ -1183,7 +1159,17 @@ export class BonusService {
             }
         }
 
-        if (data.startDate.length == 0 ) {
+        if (!data.startDate ) {
+
+            return {
+                success: false,
+                bonusId: 0,
+                status: 401,
+                description: "missing bonus start date"
+            }
+        }
+
+        if (!data.endDate ) {
 
             return {
                 success: false,
@@ -1214,9 +1200,9 @@ export class BonusService {
 
         try {
 
-            const bonus = await this.bonusBetRepository.findOneBy({id: data.bonusId});
+            const bonus = await this.bonusRepository.findOneBy({id: data.bonusId});
 
-             await this.campaignBonusRepository.update(
+            await this.campaignBonusRepository.update(
                 {
                     id: existingBonus.id
                 },
