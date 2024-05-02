@@ -1518,20 +1518,22 @@ export class BonusService {
                 }
             );
 
-            // debit remaining bonus amount from user balance
-            let debitPayload = {
-                amount: userBonus.balance,
-                userId: userId,
-                clientId: userBonus.client_id,
-                description: userBonus.name + " deactivated",
-                subject: 'Bonus Deactivated',
-                source: 'mobile',
-                wallet: 'sport-bonus',
-                channel: 'Internal',
-                username: userBonus.username
-            }
+            if (userBonus.balance > 1) {
+                // debit remaining bonus amount from user balance
+                let debitPayload = {
+                    amount: userBonus.balance,
+                    userId: userId,
+                    clientId: userBonus.client_id,
+                    description: userBonus.name + " deactivated",
+                    subject: 'Bonus Deactivated',
+                    source: 'mobile',
+                    wallet: 'sport-bonus',
+                    channel: 'Internal',
+                    username: userBonus.username
+                }
 
-            await this.walletService.debit(debitPayload);
+                await this.walletService.debit(debitPayload);
+            }
         }
 
     }
