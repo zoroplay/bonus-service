@@ -235,7 +235,7 @@ export class BonusBetService {
                 }
             });
 
-            let rollover_count = userBonus.completed_rollover_count + 1;
+            let rollover_count = parseInt(userBonus.completed_rollover_count.toString()) + 1;
             // let pending_amount = userBonus.pending_amount  - data.stake;
             let rolled_amount = parseFloat(userBonus.used_amount.toString()) + parseFloat(data.stake.toString());
             let balance = userBonus.balance - data.stake;
