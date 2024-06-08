@@ -58,7 +58,7 @@ export class AppService {
 
           let debitPayload = {
             // currency: clientSettings.currency,
-            amount: bonus.balance,
+            amount: ''+bonus.balance,
             userId: bonus.user_id,
             username: bonus.username,
             clientId: bonus.client_id,
