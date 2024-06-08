@@ -856,7 +856,6 @@ export class BonusService {
             bonusAmount = existingBonus.max_amount;
         }
 
-
         existingUserBonus.client_id = data.clientId
         existingUserBonus.bonus_id = existingBonus.id;
         existingUserBonus.bonus_type = existingBonus.bonus_type
@@ -897,16 +896,23 @@ export class BonusService {
                 transaction.reference_id = bonusResult.id
                 transaction.description = existingBonus.name+" awarded"
                 
-                await this.transactionsRepository.save(transaction)
+                await this.transactionsRepository.save(transaction);
+
+                let wallet = 'sport-bonus';
+                if (existingBonus.product === 'virtual') {
+                    wallet = 'virtual';
+                } else if(existingBonus.product === 'casino') {
+                    wallet = 'casino';
+                }
 
                 let creditPayload = {
-                    amount: bonusAmount,
-                    userId: data.userId,
+                    amount: ''+bonusAmount,
+                    userId: parseInt(data.userId),
                     clientId: data.clientId,
                     description: existingBonus.name + " awarded",
-                    subject: 'New Bonus',
+                    subject: existingBonus.name,
                     source: 'mobile',
-                    wallet: 'sport-bonus',
+                    wallet,
                     channel: 'Internal',
                     username: data.username
                 }
@@ -969,16 +975,23 @@ export class BonusService {
                     
                     await this.transactionsRepository.save(transaction)
 
+                    let wallet = 'sport-bonus';
+                    if (existingBonus.product === 'virtual') {
+                        wallet = 'virtual';
+                    } else if(existingBonus.product === 'casino') {
+                        wallet = 'casino';
+                    }
+
                     // send bonus credit
                         
                     let creditPayload = {
-                        amount: bonusAmount,
+                        amount: ''+bonusAmount,
                         userId: userId,
                         clientId: data.clientId,
                         description: existingBonus.name + " awarded",
-                        subject: 'Bonus Awarded',
+                        subject: existingBonus.name,
                         source: 'mobile',
-                        wallet: 'sport-bonus',
+                        wallet,
                         channel: 'Internal',
                         username: usernames[i]
                     }
@@ -1521,7 +1534,7 @@ export class BonusService {
             if (userBonus.balance > 1) {
                 // debit remaining bonus amount from user balance
                 let debitPayload = {
-                    amount: userBonus.balance,
+                    amount: ''+userBonus.balance,
                     userId: userId,
                     clientId: userBonus.client_id,
                     description: userBonus.name + " deactivated",
