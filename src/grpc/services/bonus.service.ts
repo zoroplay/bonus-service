@@ -1548,6 +1548,11 @@ export class BonusService {
                 await this.walletService.debit(debitPayload);
             }
         }
+    }
 
+    async deletePlayerData(user_id) {
+        await this.bonusBetRepository.delete({user_id});
+        
+        await this.userBonusRepository.delete({user_id});
     }
 }

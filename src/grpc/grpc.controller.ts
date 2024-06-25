@@ -135,4 +135,10 @@ export class GrpcController {
     console.log('Settle bet');
     return this.bonusBetService.settleBet(data);
   }
+
+  @GrpcMethod('BonusService', 'DeletePlayerData')
+  deletePlayerData(data: GetBonusRequest): Promise<any> {
+    console.log('delete player data');
+    return this.bonusService.deletePlayerData(data.clientId);
+  }
 }
