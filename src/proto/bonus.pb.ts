@@ -6,9 +6,18 @@
 
 /* eslint-disable */
 import { GrpcMethod, GrpcStreamMethod } from "@nestjs/microservices";
+import { wrappers } from "protobufjs";
 import { Observable } from "rxjs";
+import { Struct } from "./google/protobuf/struct.pb";
 
 export const protobufPackage = "bonus";
+
+export interface CommonResponseObj {
+  status?: number | undefined;
+  success?: boolean | undefined;
+  message: string;
+  data?: { [key: string]: any } | undefined;
+}
 
 export interface CheckDepositBonusRequest {
   clientId: number;
@@ -333,6 +342,8 @@ export interface EmptyResponse {
 
 export const BONUS_PACKAGE_NAME = "bonus";
 
+wrappers[".google.protobuf.Struct"] = { fromObject: Struct.wrap, toObject: Struct.unwrap } as any;
+
 export interface BonusServiceClient {
   fetchBonusReport(request: FetchReportRequest): Observable<FetchReportResponse>;
 
@@ -346,7 +357,7 @@ export interface BonusServiceClient {
 
   checkDepositBonus(request: CheckDepositBonusRequest): Observable<CheckDepositBonusResponse>;
 
-  settleBet(request: SettleBetRequest): Observable<EmptyResponse>;
+  settleBet(request: SettleBetRequest): Observable<CommonResponseObj>;
 
   getBonus(request: GetBonusRequest): Observable<GetBonusResponse>;
 
@@ -398,7 +409,7 @@ export interface BonusServiceController {
     request: CheckDepositBonusRequest,
   ): Promise<CheckDepositBonusResponse> | Observable<CheckDepositBonusResponse> | CheckDepositBonusResponse;
 
-  settleBet(request: SettleBetRequest): Promise<EmptyResponse> | Observable<EmptyResponse> | EmptyResponse;
+  settleBet(request: SettleBetRequest): Promise<CommonResponseObj> | Observable<CommonResponseObj> | CommonResponseObj;
 
   getBonus(request: GetBonusRequest): Promise<GetBonusResponse> | Observable<GetBonusResponse> | GetBonusResponse;
 

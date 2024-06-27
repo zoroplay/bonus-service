@@ -26,6 +26,7 @@ import { BonusBetService } from './services/bonus.bet.service';
 import { PlaceBetResponse } from './interfaces/betting.service.interface';
 import { FetchReportRequest } from './dto/bonus.dto';
 import { ReportsService } from './services/reports.service';
+import { CommonResponseObj } from "src/proto/bonus.pb";
 
 @Controller()
 export class GrpcController {
@@ -131,7 +132,7 @@ export class GrpcController {
   }
 
   @GrpcMethod('BonusService', 'SettleBet')
-  SettleBet(data: SettleBet): Promise<any> {
+  SettleBet(data: SettleBet): Promise<CommonResponseObj> {
     console.log('Settle bet');
     return this.bonusBetService.settleBet(data);
   }

@@ -382,9 +382,14 @@ export class BonusBetService {
                         }
                     )
                 }
+                return {success: true, message: 'bet updated', data: {amount}}
+            } else {
+                return {success: false, message: 'bet not found', data: {}}
             }
         } catch (e) {
             console.log(e.message);
+            return {success: false, message: 'Unable to process request', data: {}}
+
         }
     }
    
