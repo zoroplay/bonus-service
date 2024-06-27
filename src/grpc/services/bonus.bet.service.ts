@@ -303,15 +303,20 @@ export class BonusBetService {
             const bet = await this.bonusBetRepository.findOne({where: {bet_id: data.betId}});
 
             if (bet) {
-                const bonus = await this.userBonusRepository.findOne({where: {
-                    id: bet.user_bonus_id,
+                const userBonus = await this.userBonusRepository.findOne({
+                    where: {
+                        id: bet.user_bonus_id,
                 }})
 
-                const amount = data.amount - bet.stake;
+                const bonus = await this.bonusRepository.findOne({where: {id: userBonus.bonus_id}});
+
+                let amount = data.amount - bet.stake;
+                if(amount > bonus.maximum_winning)
+                    amount = bonus.maximum_winning;
                 // const completed_rollover_count = bonus.completed_rollover_count + 1;
                 let can_redeem = 0;
 
-                if (bonus.completed_rollover_count === bonus.rollover_count && bonus.pending_amount === 0) {
+                if (userBonus.completed_rollover_count === userBonus.rollover_count && userBonus.pending_amount === 0) {
                     can_redeem = 1;
                 }
                 // update bet status
@@ -330,21 +335,22 @@ export class BonusBetService {
                     transaction.user_id             = bet.user_id
                     transaction.amount              = amount
                     transaction.balance             = amount
-                    transaction.user_bonus_id       = bonus.id
+                    transaction.user_bonus_id       = userBonus.id
                     transaction.transaction_type    = TRANSACTION_TYPE_CREDIT
                     transaction.reference_type      = REFERENCE_TYPE_WONBET
                     transaction.reference_id        = bet.id
-                    transaction.description         = "Customer won a bet using "+bonus.name+" bonus"
+                    transaction.description         = "Customer won a bet using "+userBonus.name+" bonus"
                     //save transactions
                     await this.transactionsRepository.save(transaction);
 
                     // update bonus status
                     await this.userBonusRepository.update(
                         {
-                            id: bonus.id
+                            id: userBonus.id
                         },{
                             balance: amount,
                             can_redeem,
+                            status: 2
                         }
                     )
 
@@ -354,8 +360,8 @@ export class BonusBetService {
                     transaction.client_id           = data.clientId
                     transaction.user_id             = bet.user_id
                     transaction.amount              = bet.stake
-                    transaction.balance             = bet.stake + bonus.balance;
-                    transaction.user_bonus_id       = bonus.id
+                    transaction.balance             = bet.stake + userBonus.balance;
+                    transaction.user_bonus_id       = userBonus.id
                     transaction.transaction_type    = TRANSACTION_TYPE_CREDIT
                     transaction.reference_type      = REFERENCE_TYPE_CANCELBET
                     transaction.reference_id        = bet.id
@@ -366,13 +372,13 @@ export class BonusBetService {
                     // update bonus status
                     await this.userBonusRepository.update(
                         {
-                            id: bonus.id
+                            id: userBonus.id
                         },{
-                            balance: bonus.balance + bet.stake,
-                            pending_amount: bonus.pending_amount + bet.stake,
-                            completed_rollover_count: bonus.completed_rollover_count - 1,
-                            rolled_amount: bonus.rolled_amount - bet.stake,
-                            used_amount: bonus.used_amount - bet.stake
+                            balance: userBonus.balance + bet.stake,
+                            pending_amount: userBonus.pending_amount + bet.stake,
+                            completed_rollover_count: userBonus.completed_rollover_count - 1,
+                            rolled_amount: userBonus.rolled_amount - bet.stake,
+                            used_amount: userBonus.used_amount - bet.stake
                         }
                     )
                 }
