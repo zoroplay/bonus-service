@@ -880,57 +880,74 @@ export class BonusService {
                 await this.deactivateUserBonus(userId);
 
                 existingUserBonus.user_id = userId
-                existingUserBonus.username = data.username
+                existingUserBonus.username = data.username;
+                // check if user has been awarded this bonus before
+                const isAwarded = await this.userBonusRepository.findOne({
+                    where: {
+                        user_id: userId, 
+                        bonus_id: existingBonus.id
+                    }
+                });
 
-                const bonusResult = await this.userBonusRepository.save(existingUserBonus);
+                if (!isAwarded) {
 
-                // create transaction
-                let transaction =  new Transactions()
-                transaction.client_id = data.clientId
-                transaction.user_id = parseInt(data.userId)
-                transaction.amount = bonusAmount
-                transaction.balance = bonusAmount;
-                transaction.user_bonus_id = bonusResult.id
-                transaction.transaction_type = TRANSACTION_TYPE_CREDIT
-                transaction.reference_type = REFERENCE_TYPE_BONUS
-                transaction.reference_id = bonusResult.id
-                transaction.description = existingBonus.name+" awarded"
+                    const bonusResult = await this.userBonusRepository.save(existingUserBonus);
+
+                    // create transaction
+                    let transaction =  new Transactions()
+                    transaction.client_id = data.clientId
+                    transaction.user_id = parseInt(data.userId)
+                    transaction.amount = bonusAmount
+                    transaction.balance = bonusAmount;
+                    transaction.user_bonus_id = bonusResult.id
+                    transaction.transaction_type = TRANSACTION_TYPE_CREDIT
+                    transaction.reference_type = REFERENCE_TYPE_BONUS
+                    transaction.reference_id = bonusResult.id
+                    transaction.description = existingBonus.name+" awarded"
+                    
+                    await this.transactionsRepository.save(transaction);
+
+                    let wallet = 'sport-bonus';
+                    if (existingBonus.product === 'virtual') {
+                        wallet = 'virtual';
+                    } else if(existingBonus.product === 'casino') {
+                        wallet = 'casino';
+                    }
+
+                    let creditPayload = {
+                        amount: ''+bonusAmount,
+                        userId: parseInt(data.userId),
+                        clientId: data.clientId,
+                        description: existingBonus.name + " awarded",
+                        subject: existingBonus.name,
+                        source: 'mobile',
+                        wallet,
+                        channel: 'Internal',
+                        username: data.username
+                    }
+
+                    await this.walletService.credit(creditPayload);
+                    // save trackier customer
+                    if (data.promoCode)
+                        this.trackierService.createCustomer(data);
                 
-                await this.transactionsRepository.save(transaction);
 
-                let wallet = 'sport-bonus';
-                if (existingBonus.product === 'virtual') {
-                    wallet = 'virtual';
-                } else if(existingBonus.product === 'casino') {
-                    wallet = 'casino';
-                }
-
-                let creditPayload = {
-                    amount: ''+bonusAmount,
-                    userId: parseInt(data.userId),
-                    clientId: data.clientId,
-                    description: existingBonus.name + " awarded",
-                    subject: existingBonus.name,
-                    source: 'mobile',
-                    wallet,
-                    channel: 'Internal',
-                    username: data.username
-                }
-
-                await this.walletService.credit(creditPayload);
-                // save trackier customer
-                if (data.promoCode)
-                    this.trackierService.createCustomer(data);
-
-                return {
-                    status: 201,
-                    description: "bonus awarded successfully",
-                    bonus: {
-                        bonusType: bonusResult.bonus_type,
-                        amount: bonusResult.amount,
-                        expiryDate: bonusResult.expiry_date,
-                        created: bonusResult.created
-                    },
+                    return {
+                        status: 201,
+                        description: "bonus awarded successfully",
+                        bonus: {
+                            bonusType: bonusResult.bonus_type,
+                            amount: bonusResult.amount,
+                            expiryDate: bonusResult.expiry_date,
+                            created: bonusResult.created
+                        },
+                    }
+                } else {
+                    return {
+                        status: 401,
+                        description: "User has already been awarded this bonus",
+                        bonus: null
+                    }
                 }
 
             } else {
@@ -942,65 +959,75 @@ export class BonusService {
                     // deactivate any active bonus
                     await this.deactivateUserBonus(userId);
 
-                    let existingUserBonus = new Userbonus();
+                    // check if user has been awarded this bonus before
+                    const isAwarded = await this.userBonusRepository.findOne({
+                        where: {
+                            user_id: userId, 
+                            bonus_id: existingBonus.id
+                        }
+                    });
 
-                    existingUserBonus.client_id = data.clientId
-                    existingUserBonus.bonus_id = existingBonus.id;
-                    existingUserBonus.bonus_type = existingBonus.bonus_type
-                    existingUserBonus.amount = bonusAmount;
-                    existingUserBonus.balance = bonusAmount;
-                    existingUserBonus.expiry_date = expiry;
-                    existingUserBonus.rollover_count = existingBonus.rollover_count
-                    existingUserBonus.pending_amount = bonusAmount * existingBonus.rollover_count
-                    existingUserBonus.rolled_amount = 0
-                    existingUserBonus.completed_rollover_count = 0
-                    existingUserBonus.name = existingBonus.name;
-                    existingUserBonus.promoCode = data.promoCode;
-                    existingUserBonus.user_id = userId
-                    existingUserBonus.username = usernames[i];
+                    if (!isAwarded) {
+                        let existingUserBonus = new Userbonus();
 
-                    const bonusResult = await this.userBonusRepository.save(existingUserBonus);
+                        existingUserBonus.client_id = data.clientId
+                        existingUserBonus.bonus_id = existingBonus.id;
+                        existingUserBonus.bonus_type = existingBonus.bonus_type
+                        existingUserBonus.amount = bonusAmount;
+                        existingUserBonus.balance = bonusAmount;
+                        existingUserBonus.expiry_date = expiry;
+                        existingUserBonus.rollover_count = existingBonus.rollover_count
+                        existingUserBonus.pending_amount = bonusAmount * existingBonus.rollover_count
+                        existingUserBonus.rolled_amount = 0
+                        existingUserBonus.completed_rollover_count = 0
+                        existingUserBonus.name = existingBonus.name;
+                        existingUserBonus.promoCode = data.promoCode;
+                        existingUserBonus.user_id = userId
+                        existingUserBonus.username = usernames[i];
 
-                    // create transaction
-                    let transaction =  new Transactions()
-                    transaction.client_id = data.clientId
-                    transaction.user_id = userId
-                    transaction.amount = bonusAmount
-                    transaction.balance = bonusAmount;
-                    transaction.user_bonus_id = bonusResult.id
-                    transaction.transaction_type = TRANSACTION_TYPE_CREDIT
-                    transaction.reference_type = REFERENCE_TYPE_BONUS
-                    transaction.reference_id = bonusResult.id
-                    transaction.description = existingBonus.name+" awarded"
-                    
-                    await this.transactionsRepository.save(transaction)
+                        const bonusResult = await this.userBonusRepository.save(existingUserBonus);
 
-                    let wallet = 'sport-bonus';
-                    if (existingBonus.product === 'virtual') {
-                        wallet = 'virtual';
-                    } else if(existingBonus.product === 'casino') {
-                        wallet = 'casino';
-                    }
-
-                    // send bonus credit
+                        // create transaction
+                        let transaction =  new Transactions()
+                        transaction.client_id = data.clientId
+                        transaction.user_id = userId
+                        transaction.amount = bonusAmount
+                        transaction.balance = bonusAmount;
+                        transaction.user_bonus_id = bonusResult.id
+                        transaction.transaction_type = TRANSACTION_TYPE_CREDIT
+                        transaction.reference_type = REFERENCE_TYPE_BONUS
+                        transaction.reference_id = bonusResult.id
+                        transaction.description = existingBonus.name+" awarded"
                         
-                    let creditPayload = {
-                        amount: ''+bonusAmount,
-                        userId: userId,
-                        clientId: data.clientId,
-                        description: existingBonus.name + " awarded",
-                        subject: existingBonus.name,
-                        source: 'mobile',
-                        wallet,
-                        channel: 'Internal',
-                        username: usernames[i]
-                    }
+                        await this.transactionsRepository.save(transaction)
 
-                    await this.walletService.credit(creditPayload);
-                    // save trackier customer
-                    if (data.promoCode)
-                        this.trackierService.createCustomer(data);
-                
+                        let wallet = 'sport-bonus';
+                        if (existingBonus.product === 'virtual') {
+                            wallet = 'virtual';
+                        } else if(existingBonus.product === 'casino') {
+                            wallet = 'casino';
+                        }
+
+                        // send bonus credit
+                            
+                        let creditPayload = {
+                            amount: ''+bonusAmount,
+                            userId: userId,
+                            clientId: data.clientId,
+                            description: existingBonus.name + " awarded",
+                            subject: existingBonus.name,
+                            source: 'mobile',
+                            wallet,
+                            channel: 'Internal',
+                            username: usernames[i]
+                        }
+
+                        await this.walletService.credit(creditPayload);
+                        // save trackier customer
+                        if (data.promoCode)
+                            this.trackierService.createCustomer(data);
+                    }
+                        
                     i++;
                 }
 
