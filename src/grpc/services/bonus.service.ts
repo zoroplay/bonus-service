@@ -882,14 +882,14 @@ export class BonusService {
                 existingUserBonus.user_id = userId
                 existingUserBonus.username = data.username;
                 // check if user has been awarded this bonus before
-                const isAwarded = await this.userBonusRepository.findOne({
-                    where: {
-                        user_id: userId, 
-                        bonus_id: existingBonus.id
-                    }
-                });
+                // const isAwarded = await this.userBonusRepository.findOne({
+                //     where: {
+                //         user_id: userId, 
+                //         bonus_id: existingBonus.id
+                //     }
+                // });
 
-                if (!isAwarded) {
+                // if (!isAwarded) {
 
                     const bonusResult = await this.userBonusRepository.save(existingUserBonus);
 
@@ -931,7 +931,6 @@ export class BonusService {
                     if (data.promoCode)
                         this.trackierService.createCustomer(data);
                 
-
                     return {
                         status: 201,
                         description: "bonus awarded successfully",
@@ -942,13 +941,13 @@ export class BonusService {
                             created: bonusResult.created
                         },
                     }
-                } else {
-                    return {
-                        status: 401,
-                        description: "User has already been awarded this bonus",
-                        bonus: null
-                    }
-                }
+                // } else {
+                //     return {
+                //         status: 401,
+                //         description: "User has already been awarded this bonus",
+                //         bonus: null
+                //     }
+                // }
 
             } else {
 
@@ -960,14 +959,14 @@ export class BonusService {
                     await this.deactivateUserBonus(userId);
 
                     // check if user has been awarded this bonus before
-                    const isAwarded = await this.userBonusRepository.findOne({
-                        where: {
-                            user_id: userId, 
-                            bonus_id: existingBonus.id
-                        }
-                    });
+                    // const isAwarded = await this.userBonusRepository.findOne({
+                    //     where: {
+                    //         user_id: userId, 
+                    //         bonus_id: existingBonus.id
+                    //     }
+                    // });
 
-                    if (!isAwarded) {
+                    
                         let existingUserBonus = new Userbonus();
 
                         existingUserBonus.client_id = data.clientId
@@ -1026,7 +1025,7 @@ export class BonusService {
                         // save trackier customer
                         if (data.promoCode)
                             this.trackierService.createCustomer(data);
-                    }
+                    
                         
                     i++;
                 }
