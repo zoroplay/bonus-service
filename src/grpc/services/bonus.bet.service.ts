@@ -301,16 +301,18 @@ export class BonusBetService {
     async settleBet(data: SettleBet) {
         try {
             const bet = await this.bonusBetRepository.findOne({where: {bet_id: data.betId}});
-
+            let { amount } = data;
             if (bet) {
                 const userBonus = await this.userBonusRepository.findOne({
                     where: {
                         id: bet.user_bonus_id,
-                }})
+                    }
+                })
 
                 const bonus = await this.bonusRepository.findOne({where: {id: userBonus.bonus_id}});
 
-                let amount = data.amount - bet.stake;
+                console.log('log', userBonus, bonus);
+                // let amount = data.amount - bet.stake;
                 if(amount > bonus.maximum_winning)
                     amount = bonus.maximum_winning;
                 // const completed_rollover_count = bonus.completed_rollover_count + 1;
@@ -319,6 +321,7 @@ export class BonusBetService {
                 if (userBonus.completed_rollover_count === userBonus.rollover_count && userBonus.pending_amount === 0) {
                     can_redeem = 1;
                 }
+
                 // update bet status
                 await this.bonusBetRepository.update(
                     {
