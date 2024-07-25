@@ -300,6 +300,7 @@ export class BonusBetService {
 
     async settleBet(data: SettleBet) {
         try {
+
             const bet = await this.bonusBetRepository.findOne({where: {bet_id: data.betId}});
             let { amount } = data;
             if (bet) {
@@ -311,7 +312,7 @@ export class BonusBetService {
 
                 const bonus = await this.bonusRepository.findOne({where: {id: userBonus.bonus_id}});
 
-                console.log('log', userBonus, bonus);
+                // console.log('log', userBonus, bonus);
                 // let amount = data.amount - bet.stake;
                 if(amount > bonus.maximum_winning)
                     amount = bonus.maximum_winning;
@@ -327,17 +328,19 @@ export class BonusBetService {
                     {
                         bet_id: data.betId,
                     }, {
-                        status: data.status
+                        status: data.status,
                     }
                 );
 
                 if (data.status === BET_WON) {
+                    const balance = amount + parseFloat(''+userBonus.balance);
+                    // console.log(balance, amount, userBonus.balance);
                     // create transaction
                     let transaction                 = new Transactions()
                     transaction.client_id           = data.clientId
                     transaction.user_id             = bet.user_id
                     transaction.amount              = amount
-                    transaction.balance             = amount
+                    transaction.balance             = balance;
                     transaction.user_bonus_id       = userBonus.id
                     transaction.transaction_type    = TRANSACTION_TYPE_CREDIT
                     transaction.reference_type      = REFERENCE_TYPE_WONBET
@@ -345,25 +348,29 @@ export class BonusBetService {
                     transaction.description         = "Customer won a bet using "+userBonus.name+" bonus"
                     //save transactions
                     await this.transactionsRepository.save(transaction);
-
+                    let pending_amount = userBonus.pending_amount;
+                    if (pending_amount >= 0)
+                        pending_amount = parseFloat(''+userBonus.pending_amount) - amount
                     // update bonus status
                     await this.userBonusRepository.update(
                         {
                             id: userBonus.id
                         },{
-                            balance: amount,
+                            balance,
                             can_redeem,
-                            status: 2
+                            pending_amount: pending_amount
+                            // status: 2
                         }
                     )
 
                 } else if (data.status === BET_CANCELLED || data.status === BET_VOIDED || data.status === BET_WINNING_ROLLBACK) {
+                    const balance = parseFloat(''+bet.stake) + parseFloat(''+userBonus.balance);
                     // create transaction
                     let transaction                 = new Transactions()
                     transaction.client_id           = data.clientId
                     transaction.user_id             = bet.user_id
                     transaction.amount              = bet.stake
-                    transaction.balance             = bet.stake + userBonus.balance;
+                    transaction.balance             = balance;
                     transaction.user_bonus_id       = userBonus.id
                     transaction.transaction_type    = TRANSACTION_TYPE_CREDIT
                     transaction.reference_type      = REFERENCE_TYPE_CANCELBET
@@ -377,11 +384,11 @@ export class BonusBetService {
                         {
                             id: userBonus.id
                         },{
-                            balance: userBonus.balance + bet.stake,
-                            pending_amount: userBonus.pending_amount + bet.stake,
+                            balance,
+                            // pending_amount: parseFloat(''+userBonus.pending_amount) + parseFloat(''+bet.stake),
                             completed_rollover_count: userBonus.completed_rollover_count - 1,
-                            rolled_amount: userBonus.rolled_amount - bet.stake,
-                            used_amount: userBonus.used_amount - bet.stake
+                            rolled_amount: parseFloat(''+userBonus.rolled_amount) - parseFloat(''+bet.stake),
+                            used_amount: parseFloat(''+userBonus.used_amount) - parseFloat(''+bet.stake)
                         }
                     )
                 }
