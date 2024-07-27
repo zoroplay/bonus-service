@@ -80,4 +80,52 @@ export class AppService {
       console.log('error running expired check', e.message);
     }
   }
+
+  @Cron(CronExpression.EVERY_5_MINUTES)
+  async checkCompleted () {
+    console.log('running cron jobs to check wagering requirements');
+    // get active player bonus
+    const playerBonuses = await this.userBonusRepository.createQueryBuilder('bonus')  
+      .andWhere('status = :status', {status: 1})
+      .getMany();
+
+    for (const playerBonus of playerBonuses) {
+      const bonus = await this.bonusRepository.findOne({where: {id: playerBonus.bonus_id}});
+
+      if(playerBonus.completed_rollover_count >= bonus.rollover_count && playerBonus.rolled_amount >= playerBonus.pending_amount ) {
+        let amount = playerBonus.rolled_amount;
+        if (playerBonus.rolled_amount > bonus.maximum_winning)
+          amount = bonus.maximum_winning;
+
+        await this.userBonusRepository.update(
+          {id: playerBonus.id},
+          {status: 2}
+        );
+
+        let creditPayload = {
+          amount: ''+amount,
+          userId: playerBonus.user_id,
+          username: playerBonus.username,
+          clientId: bonus.client_id,
+          subject: "Bonus Won",
+          description: `Completed wagering requirements for ${bonus.name}`,
+          source: 'internal',
+          wallet: 'main',
+          channel: 'Internal'
+          // transaction_type: TRANSACTION_TYPE_PLACE_BET
+        }
+
+        // credit user wallet with bonus won
+        await this.walletService.credit(creditPayload);
+
+        // reset user bonus wallet
+        await this.walletService.resetBonusWallet({
+          userId: playerBonus.user_id, 
+          clientId: bonus.client_id,
+          username: playerBonus.username,
+          wallet: 'sport-bonus'
+        })
+      }
+    }
+  }
 }

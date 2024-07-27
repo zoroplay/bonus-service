@@ -12,6 +12,107 @@ import { Struct } from "./google/protobuf/struct.pb";
 
 export const protobufPackage = "wallet";
 
+export interface ResetBonusWalletRequest {
+  clientId: number;
+  userId: number;
+  username: string;
+  wallet: string;
+}
+
+export interface FetchLastApprovedRequest {
+  branchId: number;
+  clientId: number;
+}
+
+export interface FetchSalesReportRequest {
+  branchId: number;
+  clientId: number;
+  status: number;
+}
+
+export interface LastApprovedResponse {
+  success: boolean;
+  status: number;
+  message: string;
+  data?: LastApproved | undefined;
+}
+
+export interface SalesReportResponseArray {
+  success: boolean;
+  status: number;
+  message: string;
+  data: LastApproved[];
+}
+
+export interface LastApprovedResponseObj {
+  success: boolean;
+  status: number;
+  message: string;
+  data?: LastApproved | undefined;
+}
+
+export interface LastApproved {
+  id: number;
+  branchId: number;
+  openingBalance: number;
+  closingBalance: number;
+  onlinePayouts: number;
+  onlineSales: number;
+  normalSales: number;
+  normalPayouts: number;
+  otherSales: number;
+  otherPayouts: number;
+  cashin: number;
+  cashout: number;
+  expenses: number;
+  status: number;
+  date: string;
+  createdAt: string;
+  clientId: number;
+}
+
+export interface FetchReportRequest {
+  clientId: number;
+  userId: number;
+  date: string;
+}
+
+export interface HandleReportRequest {
+  branchId: number;
+  openingBalance: number;
+  closingBalance: number;
+  onlinePayouts: number;
+  onlineSales: number;
+  normalSales: number;
+  normalPayouts: number;
+  otherPayouts: number;
+  otherSales: number;
+  cashin: number;
+  cashout: number;
+  expenses: number;
+  date: string;
+  clientId: number;
+}
+
+export interface FetchReportResponse {
+  success: boolean;
+  status: number;
+  message: string;
+  data?: { [key: string]: any } | undefined;
+}
+
+export interface GetTransactionsRequest {
+  clientId: number;
+  from: string;
+  to: string;
+  transactionType?: string | undefined;
+  referenceNo?: string | undefined;
+  username?: string | undefined;
+  keyword?: string | undefined;
+  limit?: number | undefined;
+  page: number;
+}
+
 export interface ProcessRetailTransaction {
   id: number;
   clientId: number;
@@ -44,8 +145,14 @@ export interface EmptyRequest {
 }
 
 export interface BranchRequest {
+  clientId: number;
   branchId: number;
   date?: string | undefined;
+}
+
+export interface CashbookIdRequest {
+  id: number;
+  clientId: number;
 }
 
 export interface IdRequest {
@@ -66,6 +173,7 @@ export interface CashbookCreateExpenseRequest {
   branchId: number;
   comment: string;
   id?: number | undefined;
+  clientId: number;
 }
 
 export interface ExpenseSingleResponse {
@@ -87,7 +195,7 @@ export interface Expense {
   userId: number;
   expenseTypeId: number;
   requestedAmount: number;
-  approvedAmount: number;
+  amount: number;
   status: number;
   branchComment: string;
   adminComment: string;
@@ -110,6 +218,7 @@ export interface CashbookCreateCashInOutRequest {
   amount: number;
   comment: string;
   id?: number | undefined;
+  clientId: number;
 }
 
 export interface CashInOutSingleResponse {
@@ -582,6 +691,7 @@ export interface TransactionData {
   transactionDate: string;
   channel: string;
   status: number;
+  wallet: string;
 }
 
 export interface UpdateWithdrawalRequest {
@@ -658,15 +768,25 @@ export const WALLET_PACKAGE_NAME = "wallet";
 wrappers[".google.protobuf.Struct"] = { fromObject: Struct.wrap, toObject: Struct.unwrap } as any;
 
 export interface WalletServiceClient {
+  cashbookVerifyFinalTransaction(request: FetchLastApprovedRequest): Observable<CommonResponseObj>;
+
+  cashbookFetchLastApproved(request: FetchLastApprovedRequest): Observable<LastApprovedResponse>;
+
+  cashbookFetchSalesReport(request: FetchSalesReportRequest): Observable<SalesReportResponseArray>;
+
+  cashbookFetchReport(request: FetchReportRequest): Observable<FetchReportResponse>;
+
+  cashbookHandleReport(request: HandleReportRequest): Observable<LastApprovedResponseObj>;
+
   cashbookApproveExpense(request: CashbookApproveExpenseRequest): Observable<ExpenseSingleResponse>;
 
   cashbookCreateExpense(request: CashbookCreateExpenseRequest): Observable<ExpenseSingleResponse>;
 
   cashbookFindAllExpense(request: EmptyRequest): Observable<ExpenseRepeatedResponse>;
 
-  cashbookFindOneExpense(request: IdRequest): Observable<ExpenseSingleResponse>;
+  cashbookFindOneExpense(request: CashbookIdRequest): Observable<ExpenseSingleResponse>;
 
-  cashbookDeleteOneExpense(request: IdRequest): Observable<ExpenseSingleResponse>;
+  cashbookDeleteOneExpense(request: CashbookIdRequest): Observable<ExpenseSingleResponse>;
 
   cashbookUpdateOneExpense(request: CashbookCreateExpenseRequest): Observable<ExpenseSingleResponse>;
 
@@ -682,9 +802,9 @@ export interface WalletServiceClient {
 
   cashbookUpdateCashIn(request: CashbookCreateCashInOutRequest): Observable<CashInOutSingleResponse>;
 
-  cashbookDeleteOneCashIn(request: IdRequest): Observable<CashInOutSingleResponse>;
+  cashbookDeleteOneCashIn(request: CashbookIdRequest): Observable<CashInOutSingleResponse>;
 
-  cashbookFindOneCashIn(request: IdRequest): Observable<CashInOutSingleResponse>;
+  cashbookFindOneCashIn(request: CashbookIdRequest): Observable<CashInOutSingleResponse>;
 
   cashbookFindAllCashIn(request: EmptyRequest): Observable<CashInOutRepeatedResponse>;
 
@@ -700,9 +820,9 @@ export interface WalletServiceClient {
 
   cashbookUpdateCashOut(request: CashbookCreateCashInOutRequest): Observable<CashInOutSingleResponse>;
 
-  cashbookDeleteOneCashOut(request: IdRequest): Observable<CashInOutSingleResponse>;
+  cashbookDeleteOneCashOut(request: CashbookIdRequest): Observable<CashInOutSingleResponse>;
 
-  cashbookFindOneCashOut(request: IdRequest): Observable<CashInOutSingleResponse>;
+  cashbookFindOneCashOut(request: CashbookIdRequest): Observable<CashInOutSingleResponse>;
 
   cashbookFindAllCashOut(request: EmptyRequest): Observable<CashInOutRepeatedResponse>;
 
@@ -711,6 +831,8 @@ export interface WalletServiceClient {
   getBalance(request: GetBalanceRequest): Observable<WalletResponse>;
 
   createWallet(request: CreateWalletRequest): Observable<WalletResponse>;
+
+  resetBonusWallet(request: ResetBonusWalletRequest): Observable<WalletResponse>;
 
   fetchBetRange(request: FetchBetRangeRequest): Observable<FetchBetRangeResponse>;
 
@@ -764,6 +886,10 @@ export interface WalletServiceClient {
 
   getNetworkBalance(request: GetNetworkBalanceRequest): Observable<GetNetworkBalanceResponse>;
 
+  getMoneyTransaction(request: GetTransactionsRequest): Observable<CommonResponseObj>;
+
+  getSystemTransaction(request: GetTransactionsRequest): Observable<CommonResponseObj>;
+
   /** RETAIL SERVICES */
 
   walletTransfer(request: WalletTransferRequest): Observable<CommonResponseObj>;
@@ -780,6 +906,26 @@ export interface WalletServiceClient {
 }
 
 export interface WalletServiceController {
+  cashbookVerifyFinalTransaction(
+    request: FetchLastApprovedRequest,
+  ): Promise<CommonResponseObj> | Observable<CommonResponseObj> | CommonResponseObj;
+
+  cashbookFetchLastApproved(
+    request: FetchLastApprovedRequest,
+  ): Promise<LastApprovedResponse> | Observable<LastApprovedResponse> | LastApprovedResponse;
+
+  cashbookFetchSalesReport(
+    request: FetchSalesReportRequest,
+  ): Promise<SalesReportResponseArray> | Observable<SalesReportResponseArray> | SalesReportResponseArray;
+
+  cashbookFetchReport(
+    request: FetchReportRequest,
+  ): Promise<FetchReportResponse> | Observable<FetchReportResponse> | FetchReportResponse;
+
+  cashbookHandleReport(
+    request: HandleReportRequest,
+  ): Promise<LastApprovedResponseObj> | Observable<LastApprovedResponseObj> | LastApprovedResponseObj;
+
   cashbookApproveExpense(
     request: CashbookApproveExpenseRequest,
   ): Promise<ExpenseSingleResponse> | Observable<ExpenseSingleResponse> | ExpenseSingleResponse;
@@ -793,11 +939,11 @@ export interface WalletServiceController {
   ): Promise<ExpenseRepeatedResponse> | Observable<ExpenseRepeatedResponse> | ExpenseRepeatedResponse;
 
   cashbookFindOneExpense(
-    request: IdRequest,
+    request: CashbookIdRequest,
   ): Promise<ExpenseSingleResponse> | Observable<ExpenseSingleResponse> | ExpenseSingleResponse;
 
   cashbookDeleteOneExpense(
-    request: IdRequest,
+    request: CashbookIdRequest,
   ): Promise<ExpenseSingleResponse> | Observable<ExpenseSingleResponse> | ExpenseSingleResponse;
 
   cashbookUpdateOneExpense(
@@ -829,11 +975,11 @@ export interface WalletServiceController {
   ): Promise<CashInOutSingleResponse> | Observable<CashInOutSingleResponse> | CashInOutSingleResponse;
 
   cashbookDeleteOneCashIn(
-    request: IdRequest,
+    request: CashbookIdRequest,
   ): Promise<CashInOutSingleResponse> | Observable<CashInOutSingleResponse> | CashInOutSingleResponse;
 
   cashbookFindOneCashIn(
-    request: IdRequest,
+    request: CashbookIdRequest,
   ): Promise<CashInOutSingleResponse> | Observable<CashInOutSingleResponse> | CashInOutSingleResponse;
 
   cashbookFindAllCashIn(
@@ -865,11 +1011,11 @@ export interface WalletServiceController {
   ): Promise<CashInOutSingleResponse> | Observable<CashInOutSingleResponse> | CashInOutSingleResponse;
 
   cashbookDeleteOneCashOut(
-    request: IdRequest,
+    request: CashbookIdRequest,
   ): Promise<CashInOutSingleResponse> | Observable<CashInOutSingleResponse> | CashInOutSingleResponse;
 
   cashbookFindOneCashOut(
-    request: IdRequest,
+    request: CashbookIdRequest,
   ): Promise<CashInOutSingleResponse> | Observable<CashInOutSingleResponse> | CashInOutSingleResponse;
 
   cashbookFindAllCashOut(
@@ -883,6 +1029,10 @@ export interface WalletServiceController {
   getBalance(request: GetBalanceRequest): Promise<WalletResponse> | Observable<WalletResponse> | WalletResponse;
 
   createWallet(request: CreateWalletRequest): Promise<WalletResponse> | Observable<WalletResponse> | WalletResponse;
+
+  resetBonusWallet(
+    request: ResetBonusWalletRequest,
+  ): Promise<WalletResponse> | Observable<WalletResponse> | WalletResponse;
 
   fetchBetRange(
     request: FetchBetRangeRequest,
@@ -982,6 +1132,14 @@ export interface WalletServiceController {
     request: GetNetworkBalanceRequest,
   ): Promise<GetNetworkBalanceResponse> | Observable<GetNetworkBalanceResponse> | GetNetworkBalanceResponse;
 
+  getMoneyTransaction(
+    request: GetTransactionsRequest,
+  ): Promise<CommonResponseObj> | Observable<CommonResponseObj> | CommonResponseObj;
+
+  getSystemTransaction(
+    request: GetTransactionsRequest,
+  ): Promise<CommonResponseObj> | Observable<CommonResponseObj> | CommonResponseObj;
+
   /** RETAIL SERVICES */
 
   walletTransfer(
@@ -1012,6 +1170,11 @@ export interface WalletServiceController {
 export function WalletServiceControllerMethods() {
   return function (constructor: Function) {
     const grpcMethods: string[] = [
+      "cashbookVerifyFinalTransaction",
+      "cashbookFetchLastApproved",
+      "cashbookFetchSalesReport",
+      "cashbookFetchReport",
+      "cashbookHandleReport",
       "cashbookApproveExpense",
       "cashbookCreateExpense",
       "cashbookFindAllExpense",
@@ -1039,6 +1202,7 @@ export function WalletServiceControllerMethods() {
       "cashbookFindAllBranchCashOut",
       "getBalance",
       "createWallet",
+      "resetBonusWallet",
       "fetchBetRange",
       "fetchPlayerDeposit",
       "fetchDepositRange",
@@ -1065,6 +1229,8 @@ export function WalletServiceControllerMethods() {
       "deletePlayerData",
       "getUserAccounts",
       "getNetworkBalance",
+      "getMoneyTransaction",
+      "getSystemTransaction",
       "walletTransfer",
       "validateDepositCode",
       "processShopDeposit",
