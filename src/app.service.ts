@@ -92,9 +92,9 @@ export class AppService {
     for (const playerBonus of playerBonuses) {
       const bonus = await this.bonusRepository.findOne({where: {id: playerBonus.bonus_id}});
 
-      if(playerBonus.completed_rollover_count >= bonus.rollover_count && playerBonus.rolled_amount >= playerBonus.pending_amount ) {
-        let amount = playerBonus.rolled_amount;
-        if (playerBonus.rolled_amount > bonus.maximum_winning)
+      if(playerBonus.completed_rollover_count >= bonus.rollover_count) {
+        let amount = playerBonus.balance;
+        if (playerBonus.balance > bonus.maximum_winning)
           amount = bonus.maximum_winning;
 
         await this.userBonusRepository.update(
@@ -115,16 +115,8 @@ export class AppService {
           // transaction_type: TRANSACTION_TYPE_PLACE_BET
         }
 
-        // credit user wallet with bonus won
-        await this.walletService.credit(creditPayload);
-
-        // reset user bonus wallet
-        await this.walletService.resetBonusWallet({
-          userId: playerBonus.user_id, 
-          clientId: bonus.client_id,
-          username: playerBonus.username,
-          wallet: 'sport-bonus'
-        })
+        // credit user wallet with bonus balance
+        await this.walletService.awardBonusWinning(creditPayload);
       }
     }
   }

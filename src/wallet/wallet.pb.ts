@@ -12,13 +12,6 @@ import { Struct } from "./google/protobuf/struct.pb";
 
 export const protobufPackage = "wallet";
 
-export interface ResetBonusWalletRequest {
-  clientId: number;
-  userId: number;
-  username: string;
-  wallet: string;
-}
-
 export interface FetchLastApprovedRequest {
   branchId: number;
   clientId: number;
@@ -832,8 +825,6 @@ export interface WalletServiceClient {
 
   createWallet(request: CreateWalletRequest): Observable<WalletResponse>;
 
-  resetBonusWallet(request: ResetBonusWalletRequest): Observable<WalletResponse>;
-
   fetchBetRange(request: FetchBetRangeRequest): Observable<FetchBetRangeResponse>;
 
   fetchPlayerDeposit(request: FetchPlayerDepositRequest): Observable<WalletResponse>;
@@ -843,6 +834,8 @@ export interface WalletServiceClient {
   fetchDepositCount(request: FetchDepositCountRequest): Observable<FetchDepositCountResponse>;
 
   creditUser(request: CreditUserRequest): Observable<WalletResponse>;
+
+  awardBonusWinning(request: CreditUserRequest): Observable<WalletResponse>;
 
   debitUser(request: DebitUserRequest): Observable<WalletResponse>;
 
@@ -1030,10 +1023,6 @@ export interface WalletServiceController {
 
   createWallet(request: CreateWalletRequest): Promise<WalletResponse> | Observable<WalletResponse> | WalletResponse;
 
-  resetBonusWallet(
-    request: ResetBonusWalletRequest,
-  ): Promise<WalletResponse> | Observable<WalletResponse> | WalletResponse;
-
   fetchBetRange(
     request: FetchBetRangeRequest,
   ): Promise<FetchBetRangeResponse> | Observable<FetchBetRangeResponse> | FetchBetRangeResponse;
@@ -1051,6 +1040,8 @@ export interface WalletServiceController {
   ): Promise<FetchDepositCountResponse> | Observable<FetchDepositCountResponse> | FetchDepositCountResponse;
 
   creditUser(request: CreditUserRequest): Promise<WalletResponse> | Observable<WalletResponse> | WalletResponse;
+
+  awardBonusWinning(request: CreditUserRequest): Promise<WalletResponse> | Observable<WalletResponse> | WalletResponse;
 
   debitUser(request: DebitUserRequest): Promise<WalletResponse> | Observable<WalletResponse> | WalletResponse;
 
@@ -1202,12 +1193,12 @@ export function WalletServiceControllerMethods() {
       "cashbookFindAllBranchCashOut",
       "getBalance",
       "createWallet",
-      "resetBonusWallet",
       "fetchBetRange",
       "fetchPlayerDeposit",
       "fetchDepositRange",
       "fetchDepositCount",
       "creditUser",
+      "awardBonusWinning",
       "debitUser",
       "inititateDeposit",
       "verifyDeposit",
