@@ -16,12 +16,12 @@ export class TrackierService {
         private readonly bonusRepository: Repository<Bonus>
     ) {}
 
-    async getAccessToken() {
+    async getAccessToken(clientId) {
         // console.log('AUTH CODE', process.env.TRACKIER_AUTH_CODE)
         return axios.post(
             `${this.baseUrl}/oauth/access-refresh-token`,
             {
-                auth_code: "$2a$04$geRYyxPlSFlL6uMVUQNgnOV0YvXQB4cr3usXLfp7b0WzZHpky61nO",
+                auth_code: `${process.env.TRACKIER_AUTH_CODE}_${clientId}`,
             },
         );
     }
@@ -47,27 +47,30 @@ export class TrackierService {
                 endDate: data.endDate,
             }
 
-            const authRes = await this.getAccessToken();
+            const authRes = await this.getAccessToken(data.clientId);
             
             if (!authRes.data.success) {
                 console.log('Error sending trackier result', authRes);
             }
 
-            console.log(payload)
+            // console.log(payload)
 
-            console.log('API KEY', process.env.TRACKIER_API_KEY)
+            // console.log('API KEY', process.env.TRACKIER_API_KEY)
+            const apiKey = `${process.env.TRACKIER_API_KEY}_${data.clientId}`
 
-            const resp = await axios.post(
-                `${this.baseUrl}/coupon`, payload,
-                {
-                    headers: {
-                        'x-api-key': process.env.TRACKIER_API_KEY,
-                        authorization: `BEARER ${authRes.data.accessToken}`,
+            if (apiKey) {
+                const resp = await axios.post(
+                    `${this.baseUrl}/coupon`, payload,
+                    {
+                        headers: {
+                            'x-api-key': apiKey,
+                            authorization: `BEARER ${authRes.data.accessToken}`,
+                        },
                     },
-                },
-            );
-            console.log('trackier response ', resp.data);
-            return resp.data;
+                );
+                console.log('trackier response ', resp.data);
+                return resp.data;
+            }
         } catch (e) {
             console.log('Trackier error', e.message)
             return {success: false, message: e.emssage};
@@ -76,9 +79,10 @@ export class TrackierService {
 
     async createCustomer (data) {
         try {
-            const authRes = await this.getAccessToken();
+            const authRes = await this.getAccessToken(data.clientId);
+            const apiKey = `${process.env.TRACKIER_API_KEY}_${data.clientId}`
                 
-            if (authRes.data.success) {
+            if (authRes.data.success && apiKey) {
                 const payload = {
                     customerId: data.username,
                     customerName: data.username,
@@ -94,7 +98,7 @@ export class TrackierService {
                     `${this.baseUrl}/customer`, payload,
                     {
                         headers: {
-                            'x-api-key': process.env.TRACKIER_API_KEY,
+                            'x-api-key': apiKey,
                             authorization: `BEARER ${authRes.data.accessToken}`,
                         },
                     },
