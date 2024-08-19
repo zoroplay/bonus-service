@@ -13,18 +13,14 @@ import {UserBonusResponse} from "../interfaces/user.bonus.response.interface";
 import {Repository} from "typeorm"
 import {BonusStatusRequest} from "../interfaces/bonus.status.request.interface";
 import {
-    BONUS_TYPE_CASHBACK,
-    BONUS_TYPE_FIRST_DEPOSIT,
-    BONUS_TYPE_FREEBET,
-    BONUS_TYPE_REFERRAL,
-    BONUS_TYPE_SHARE_BET, REFERENCE_TYPE_BONUS, TRANSACTION_TYPE_CREDIT
+    BONUS_TYPE_FREEBET, REFERENCE_TYPE_BONUS, TRANSACTION_TYPE_CREDIT
 } from "../../constants";
 
 import {Transactions} from "../../entity/transactions.entity";
 import {
     AllCampaignBonus, CampaignBonusData,
     CreateCampaignBonusDto,
-    DeleteCampaignBonusDto, GetBonusByClientID,
+    DeleteCampaignBonusDto,
     GetCampaignDTO,
     RedeemCampaignBonusDto,
     UpdateCampaignBonusDto
@@ -37,7 +33,7 @@ import dayjs = require("dayjs");
 import { WalletService } from "src/wallet/wallet.service";
 import { IdentityService } from "src/identity/identity.service";
 import { HttpStatus } from "@nestjs/common";
-import { CreateBonusRequest } from "src/proto/bonus.pb";
+import { CreateBonusRequest, SearchBonusResponse, GetBonusByClientID } from "src/proto/bonus.pb";
 
 export class BonusService {
 
@@ -72,6 +68,32 @@ export class BonusService {
     getTimestampInSeconds() : number {
 
         return Math.floor(Date.now() / 1000)
+    }
+
+    async searchBonus(payload: GetBonusByClientID): Promise<SearchBonusResponse> {
+        try {
+            const {searchKey, clientId} = payload;
+            const data = [];
+
+            const results = await this.bonusRepository.createQueryBuilder('bonus')
+            .where('client_id = :clientId', {clientId})
+            .andWhere('LOWER(name) like :key', {key: `%${searchKey}%`})
+            .andWhere('status = :status', {status: 1})
+            .getRawMany();
+
+            for (const result of results) {
+                data.push({
+                    id: result.bonus_id,
+                    name: result.bonus_name
+                })
+            };
+
+            return {data};
+
+        } catch (e) {
+            console.log('error fetching bonus')
+            return  {data: []}
+        }
     }
 
     async create(data: CreateBonusRequest): Promise<CreateBonusResponse> {

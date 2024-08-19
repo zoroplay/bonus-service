@@ -16,7 +16,6 @@ import {
   AllCampaignBonus,
   CreateCampaignBonusDto,
   DeleteCampaignBonusDto,
-  GetBonusByClientID,
   GetCampaignDTO,
   RedeemCampaignBonusDto,
   UpdateCampaignBonusDto,
@@ -25,7 +24,7 @@ import { BonusBetService } from './services/bonus.bet.service';
 import { PlaceBetResponse } from './interfaces/betting.service.interface';
 import { FetchReportRequest } from './dto/bonus.dto';
 import { ReportsService } from './services/reports.service';
-import { CommonResponseObj, CreateBonusRequest } from "src/proto/bonus.pb";
+import { CommonResponseObj, CreateBonusRequest, GetBonusByClientID } from "src/proto/bonus.pb";
 
 @Controller()
 export class GrpcController {
@@ -40,6 +39,12 @@ export class GrpcController {
   fetchBonusReport(payload: FetchReportRequest) {
     console.log('FetchBonusReport');
     return this.reportsService.fetchBonus(payload);
+  }
+
+  @GrpcMethod('BonusService', 'SearchBonus')
+  SearchBonus(payload: GetBonusByClientID) {
+    console.log('Search bonus');
+    return this.bonusService.searchBonus(payload);
   }
 
   @GrpcMethod('BonusService', 'CreateBonus')
