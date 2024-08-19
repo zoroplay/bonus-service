@@ -1,7 +1,6 @@
 import {JsonLogger, LoggerFactory} from "json-logger-service";
 import {InjectRepository} from "@nestjs/typeorm";
 import {Bonus} from "../../entity/bonus.entity";
-import {CreateBonusRequest} from "../interfaces/create.bonus.request.interface";
 import {CreateBonusResponse} from "../interfaces/create.bonus.response.interface";
 import {GetBonusRequest} from "../interfaces/get.bonus.request.interface";
 import {DeleteBonusResponse} from "../interfaces/delete.bonus.response.interface";
@@ -38,6 +37,7 @@ import dayjs = require("dayjs");
 import { WalletService } from "src/wallet/wallet.service";
 import { IdentityService } from "src/identity/identity.service";
 import { HttpStatus } from "@nestjs/common";
+import { CreateBonusRequest } from "src/proto/bonus.pb";
 
 export class BonusService {
 
@@ -96,7 +96,7 @@ export class BonusService {
             // no specific conditions
             data.minimumLostGames = 0;
             data.minimumSelection = 0;
-            data.resetIntervalType = ""
+            // data.resetIntervalType = ""
             data.minimumEntryAmount = 0
             data.rolloverCount = 0
         }
@@ -220,14 +220,19 @@ export class BonusService {
         bonus.product = data.product
         bonus.minimum_lost_games = data.minimumLostGames
         bonus.minimum_selection = data.minimumSelection
-        bonus.reset_interval_type = data.resetIntervalType
+        // bonus.reset_interval_type = data.resetIntervalType
         bonus.minimum_entry_amount = data.minimumEntryAmount
         bonus.bonus_amount = data.bonusAmount
         bonus.max_amount = data.maxAmount
+        bonus.game_id = data.gameId
 
         try {
 
-            const bonusResult = await this.bonusRepository.save(bonus)
+            const bonusResult = await this.bonusRepository.save(bonus);
+
+            if(data.product === 'casino') {
+                
+            }
 
             return {
                 success: false,
@@ -383,12 +388,12 @@ export class BonusService {
                     maximum_winning : data.maximumWinning,
                     minimum_lost_games : data.minimumLostGames,
                     minimum_selection : data.minimumSelection,
-                    reset_interval_type : data.resetIntervalType,
+                    // reset_interval_type : data.resetIntervalType,
                     minimum_entry_amount : data.minimumEntryAmount,
                     bonus_amount: data.bonusAmount,
                     rollover_count : data.rolloverCount,
                     name : data.name,
-                    // bonus_amount_multiplier : data.bonusAmountMultiplier,
+                    game_id : data.gameId,
                     max_amount : data.maxAmount,
                 }
             )
@@ -1439,7 +1444,7 @@ export class BonusService {
                         id: campaign.bonus.id,
                     }});
 
-                let bon = {} as CreateBonusRequest
+                let bon = {} as any
                 bon.id = bonus.id
                 bon.clientId = bonus.client_id
                 bon.bonusType = bonus.bonus_type
@@ -1499,7 +1504,7 @@ export class BonusService {
                         id: campaign.bonus.id,
                     }});
 
-                let bon = {} as CreateBonusRequest
+                let bon: any = {};
                 bon.id = bonus.id
                 bon.clientId = bonus.client_id
                 bon.bonusType = bonus.bonus_type

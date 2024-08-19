@@ -1,7 +1,6 @@
 import {Controller} from "@nestjs/common";
 import { GrpcMethod} from "@nestjs/microservices";
 import {CheckDepositBonusRequest, GetUserBonusRequest} from "./interfaces/get.user.bonus.request.interface";
-import {CreateBonusRequest} from "./interfaces/create.bonus.request.interface";
 import {CreateBonusResponse} from "./interfaces/create.bonus.response.interface";
 import {GetBonusRequest} from "./interfaces/get.bonus.request.interface";
 import {GetBonusResponse} from "./interfaces/get.bonus.response.interface";
@@ -26,7 +25,7 @@ import { BonusBetService } from './services/bonus.bet.service';
 import { PlaceBetResponse } from './interfaces/betting.service.interface';
 import { FetchReportRequest } from './dto/bonus.dto';
 import { ReportsService } from './services/reports.service';
-import { CommonResponseObj } from "src/proto/bonus.pb";
+import { CommonResponseObj, CreateBonusRequest } from "src/proto/bonus.pb";
 
 @Controller()
 export class GrpcController {

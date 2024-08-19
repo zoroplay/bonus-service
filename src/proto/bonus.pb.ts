@@ -92,6 +92,7 @@ export interface CreateBonusRequest {
   minimumEntryAmount: number;
   maxAmount: number;
   product: string;
+  gameId?: string | undefined;
 }
 
 export interface CreateBonusResponse {

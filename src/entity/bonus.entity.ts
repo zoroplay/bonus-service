@@ -90,9 +90,9 @@ export class Bonus {
     @Column({ type: "varchar", length: 100, nullable: true, default: 'flat' })
     credit_type: string;
 
-    // @Index()
-    // @Column({ type: "varchar", length: 100, nullable: false, default: 0  })
-    // casino_percentage: string;
+    @Index()
+    @Column({ type: "varchar", nullable: true })
+    game_id: string;
 
     // @Index()
     // @Column({ type: "varchar", length: 100, nullable: false, default: 0  })
