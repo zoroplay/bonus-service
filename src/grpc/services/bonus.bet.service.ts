@@ -3,13 +3,13 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Bonus } from 'src/entity/bonus.entity';
 import { Repository } from 'typeorm';
 import * as dayjs from 'dayjs';
-import { SettleBet, UserBet, ValidateBetResponse } from '../interfaces/user.bet.interface';
+import { ValidateBetResponse } from '../interfaces/user.bet.interface';
 import { JsonLogger, LoggerFactory } from 'json-logger-service';
-import {PlaceBetResponse} from "../interfaces/betting.service.interface";
 import { Userbonus } from 'src/entity/userbonus.entity';
 import { Transactions } from 'src/entity/transactions.entity';
 import { Bonusbet } from 'src/entity/bonusbet.entity';
 import { BET_CANCELLED, BET_PENDING, BET_VOIDED, BET_WINNING_ROLLBACK, BET_WON, REFERENCE_TYPE_CANCELBET, REFERENCE_TYPE_PLACEBET, REFERENCE_TYPE_WONBET, TRANSACTION_TYPE_CREDIT, TRANSACTION_TYPE_DEBIT } from 'src/constants';
+import { PlaceBetResponse, SettleBetRequest, UserBet } from 'src/proto/bonus.pb';
 
 @Injectable()
 export class BonusBetService {
@@ -285,12 +285,14 @@ export class BonusBetService {
             console.log('bonus bet placed')
             
             return {
+                success: true,
                 betId: data.betId,
                 status: 200,
                 statusDescription: "Bonus recorded successfully",
             }
         } else {
             return {
+                success: false,
                 betId: data.betId,
                 status: 404,
                 statusDescription: "Bonus not found",
@@ -298,7 +300,7 @@ export class BonusBetService {
         }
     }
 
-    async settleBet(data: SettleBet) {
+    async settleBet(data: SettleBetRequest) {
         try {
 
             const bet = await this.bonusBetRepository.findOne({where: {bet_id: data.betId}});

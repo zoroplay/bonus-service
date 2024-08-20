@@ -61,9 +61,7 @@ export class BonusService {
 
         private identityService: IdentityService
 
-    ) {
-
-    }
+    ) {}
 
     getTimestampInSeconds() : number {
 
@@ -93,6 +91,33 @@ export class BonusService {
         } catch (e) {
             console.log('error fetching bonus')
             return  {data: []}
+        }
+    }
+
+    async getUserActiveBonus(payload: CheckDepositBonusRequest): Promise<CheckDepositBonusResponse> {
+        try {
+            const userBonus = await this.userBonusRepository.findOne({
+                where: {
+                    user_id: payload.userId,
+                    client_id: payload.clientId,
+                    status: 1
+                },
+            }); 
+            let data = null;
+            if (userBonus) {
+                const bonus = await this.bonusRepository.findOne({where: {id: userBonus.bonus_id}});
+
+                data = {
+                    bonusId: bonus.id, 
+                    value: bonus.bonus_amount,
+                    type: bonus.product,
+                    name: bonus.name,
+                    gameId: bonus.game_id
+                }
+            }
+            return {success: true, message: 'Active Bonus fetched', data};
+        } catch (e) {
+            return {success: false, message: 'Bonus request failed: ' + e.message};
         }
     }
 

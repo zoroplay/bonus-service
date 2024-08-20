@@ -9,7 +9,6 @@ import {CheckDepositBonusResponse, GetUserBonusResponse} from "./interfaces/get.
 import {AwardBonusRequest} from "./interfaces/award.bonus.request.interface";
 import {UserBonusResponse} from "./interfaces/user.bonus.response.interface";
 import {BonusService} from "./services/bonus.service";
-import {SettleBet, UserBet} from "./interfaces/user.bet.interface";
 import {BonusStatusRequest} from "./interfaces/bonus.status.request.interface";
 
 import {
@@ -21,10 +20,9 @@ import {
   UpdateCampaignBonusDto,
 } from './interfaces/campaign.bonus.interface';
 import { BonusBetService } from './services/bonus.bet.service';
-import { PlaceBetResponse } from './interfaces/betting.service.interface';
 import { FetchReportRequest } from './dto/bonus.dto';
 import { ReportsService } from './services/reports.service';
-import { CommonResponseObj, CreateBonusRequest, GetBonusByClientID } from "src/proto/bonus.pb";
+import { CommonResponseObj, CreateBonusRequest, GetBonusByClientID, PlaceBetResponse, SettleBetRequest, UserBet } from "src/proto/bonus.pb";
 
 @Controller()
 export class GrpcController {
@@ -77,10 +75,15 @@ export class GrpcController {
     return this.bonusService.userBonus(data);
   }
 
-    @GrpcMethod('BonusService', 'CheckDepositBonus')
-    CheckFirstDeposit(data: CheckDepositBonusRequest): Promise<CheckDepositBonusResponse> {
-        return this.bonusService.checkDepositBonus(data)
-    }
+  @GrpcMethod('BonusService', 'CheckDepositBonus')
+  CheckFirstDeposit(data: CheckDepositBonusRequest): Promise<CheckDepositBonusResponse> {
+    return this.bonusService.checkDepositBonus(data)
+  }
+
+  @GrpcMethod('BonusService', 'GetActiveUserBonus')
+  getActiveUserBonus(data: CheckDepositBonusRequest): Promise<CheckDepositBonusResponse> {
+    return this.bonusService.getUserActiveBonus(data)
+  }
 
   @GrpcMethod('BonusService', 'AwardBonus')
   AwardBonus(data: AwardBonusRequest): Promise<UserBonusResponse> {
@@ -136,7 +139,7 @@ export class GrpcController {
   }
 
   @GrpcMethod('BonusService', 'SettleBet')
-  SettleBet(data: SettleBet): Promise<CommonResponseObj> {
+  SettleBet(data: SettleBetRequest): Promise<CommonResponseObj> {
     console.log('Settle bet');
     return this.bonusBetService.settleBet(data);
   }
