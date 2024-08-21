@@ -920,6 +920,7 @@ export class BonusService {
         existingUserBonus.completed_rollover_count = 0
         existingUserBonus.name = existingBonus.name;
         existingUserBonus.promoCode = data.promoCode;
+        existingBonus.status = 1;
 
         try {
 
@@ -1035,6 +1036,7 @@ export class BonusService {
                         existingUserBonus.promoCode = data.promoCode;
                         existingUserBonus.user_id = userId
                         existingUserBonus.username = usernames[i];
+                        existingBonus.status = 1;
 
                         const bonusResult = await this.userBonusRepository.save(existingUserBonus);
 
