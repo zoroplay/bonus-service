@@ -21,7 +21,7 @@ export class TrackierService {
         return axios.post(
             `${this.baseUrl}/oauth/access-refresh-token`,
             {
-                auth_code: `${process.env.TRACKIER_AUTH_CODE}_${clientId}`,
+                auth_code: process.env[`TRACKIER_AUTH_CODE_${clientId}`],
             },
         );
     }
@@ -55,8 +55,8 @@ export class TrackierService {
 
             // console.log(payload)
 
-            // console.log('API KEY', process.env.TRACKIER_API_KEY)
-            const apiKey = `${process.env.TRACKIER_API_KEY}_${data.clientId}`
+            const apiKey = process.env[`TRACKIER_API_KEY_${data.clientId}`]
+            console.log('API KEY', apiKey)
 
             if (apiKey) {
                 const resp = await axios.post(
@@ -80,7 +80,7 @@ export class TrackierService {
     async createCustomer (data) {
         try {
             const authRes = await this.getAccessToken(data.clientId);
-            const apiKey = `${process.env.TRACKIER_API_KEY}_${data.clientId}`
+            const apiKey = process.env[`TRACKIER_API_KEY_${data.clientId}`]
                 
             if (authRes.data.success && apiKey) {
                 const payload = {
