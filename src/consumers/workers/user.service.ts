@@ -6,8 +6,7 @@ import {Bonus} from "../../entity/bonus.entity";
 import { BONUS_TYPE_FREEBET, BONUS_TYPE_REFERRAL
 } from "../../constants";
 import {BonusService} from "../../grpc/services/bonus.service";
-import {Freebet} from "../../entity/freebet.entity";
-import {Referral} from "../../entity/referral.entity";
+
 
 @Injectable()
 export class UserService {
@@ -20,11 +19,11 @@ export class UserService {
 
         private bonusService : BonusService,
 
-        @InjectRepository(Freebet)
-        private freebetRepository: Repository<Freebet>,
+        // @InjectRepository(Freebet)
+        // private freebetRepository: Repository<Freebet>,
 
-        @InjectRepository(Referral)
-        private referralRepository: Repository<Referral>,
+        // @InjectRepository(Referral)
+        // private referralRepository: Repository<Referral>,
 
         @InjectRepository(Bonus)
         private bonusRepository: Repository<Bonus>,
@@ -39,56 +38,56 @@ export class UserService {
   "user_id": 42942553,
 }
  */
-    async newUser(data: any): Promise<number> {
+    async newUser(data: any): Promise<any> {
 
-        data = JSON.parse(JSON.stringify(data))
+        // data = JSON.parse(JSON.stringify(data))
 
-        // check if user_id already recorded
-        let freebetExists = await this.freebetRepository.findOne({
-            where: {
-                client_id: data.client_id,
-                user_id: data.user_id,
-            }
-        });
+        // // check if user_id already recorded
+        // let freebetExists = await this.freebetRepository.findOne({
+        //     where: {
+        //         client_id: data.client_id,
+        //         user_id: data.user_id,
+        //     }
+        // });
 
-        if (freebetExists !== undefined && freebetExists.id !== undefined && freebetExists.id > 0) {
+        // if (freebetExists !== undefined && freebetExists.id !== undefined && freebetExists.id > 0) {
 
-            return 0
-        }
+        //     return 0
+        // }
 
-        // check if client has this bonus activated
-        let bonusSettings = await this.bonusRepository.findOne({
-            where: {
-                client_id: data.client_id,
-                status: 1,
-                bonus_type: BONUS_TYPE_FREEBET
-            }
-        });
+        // // check if client has this bonus activated
+        // let bonusSettings = await this.bonusRepository.findOne({
+        //     where: {
+        //         client_id: data.client_id,
+        //         status: 1,
+        //         bonus_type: BONUS_TYPE_FREEBET
+        //     }
+        // });
 
-        if (bonusSettings === undefined || bonusSettings.id === undefined || bonusSettings.id === 0) {
+        // if (bonusSettings === undefined || bonusSettings.id === undefined || bonusSettings.id === 0) {
 
-            return 0
-        }
+        //     return 0
+        // }
 
-        // create freebet
-        let freebet = new Freebet()
-        freebet.client_id = data.client_id;
-        freebet.user_id = data.user_id;
+        // // create freebet
+        // let freebet = new Freebet()
+        // freebet.client_id = data.client_id;
+        // freebet.user_id = data.user_id;
 
-        await this.freebetRepository.save(freebet)
+        // await this.freebetRepository.save(freebet)
 
-        // award bonus to user
+        // // award bonus to user
 
-        let res = await this.bonusService.awardBonus({
-            clientId: data.client_id,
-            userId: data.user_id,
-            amount: bonusSettings.bonus_amount,
-            // bonusType: BONUS_TYPE_FREEBET,
-            bonusId: 0,
-            baseValue: 0,
-        })
+        // let res = await this.bonusService.awardBonus({
+        //     clientId: data.client_id,
+        //     userId: data.user_id,
+        //     amount: bonusSettings.bonus_amount,
+        //     // bonusType: BONUS_TYPE_FREEBET,
+        //     bonusId: 0,
+        //     baseValue: 0,
+        // })
 
-        return res.bonus.amount
+        // return res.bonus.amount
     }
 
     /*
@@ -99,63 +98,63 @@ export class UserService {
       "amount": 100
     }
      */
-    async referral(data: any): Promise<number> {
+    async referral(data: any): Promise<any> {
 
-        data = JSON.parse(JSON.stringify(data))
+        // data = JSON.parse(JSON.stringify(data))
 
-        // check if user_id already recorded
-        let referralExists = await this.referralRepository.findOne({
-            where: {
-                client_id: data.client_id,
-                referred_user_id: data.referred_user_id,
-            }
-        });
+        // // check if user_id already recorded
+        // let referralExists = await this.referralRepository.findOne({
+        //     where: {
+        //         client_id: data.client_id,
+        //         referred_user_id: data.referred_user_id,
+        //     }
+        // });
 
-        if (referralExists !== undefined && referralExists.id !== undefined && referralExists.id > 0) {
+        // if (referralExists !== undefined && referralExists.id !== undefined && referralExists.id > 0) {
 
-            return 0
-        }
+        //     return 0
+        // }
 
-        // check if client has this bonus activated
-        let bonusSettings = await this.bonusRepository.findOne({
-            where: {
-                client_id: data.client_id,
-                status: 1,
-                bonus_type: BONUS_TYPE_REFERRAL
-            }
-        });
+        // // check if client has this bonus activated
+        // let bonusSettings = await this.bonusRepository.findOne({
+        //     where: {
+        //         client_id: data.client_id,
+        //         status: 1,
+        //         bonus_type: BONUS_TYPE_REFERRAL
+        //     }
+        // });
 
-        if (bonusSettings === undefined || bonusSettings.id === undefined || bonusSettings.id === 0) {
+        // if (bonusSettings === undefined || bonusSettings.id === undefined || bonusSettings.id === 0) {
 
-            return 0
-        }
+        //     return 0
+        // }
 
-        // validate bonus settings
-        if(parseFloat(data.amount) < bonusSettings.minimum_entry_amount ) {
+        // // validate bonus settings
+        // if(parseFloat(data.amount) < bonusSettings.minimum_entry_amount ) {
 
-            return 0
-        }
+        //     return 0
+        // }
 
-        // create referral
-        let referral = new Referral()
-        referral.client_id = data.client_id;
-        referral.user_id = data.user_id;
-        referral.referred_user_id = data.referred_user_id;
+        // // create referral
+        // let referral = new Referral()
+        // referral.client_id = data.client_id;
+        // referral.user_id = data.user_id;
+        // referral.referred_user_id = data.referred_user_id;
 
-        await this.referralRepository.save(referral)
+        // await this.referralRepository.save(referral)
 
-        // award bonus to user
+        // // award bonus to user
 
-        let res = await this.bonusService.awardBonus({
-            clientId: data.client_id,
-            userId: data.user_id,
-            amount: bonusSettings.bonus_amount,
-            // bonusType: BONUS_TYPE_REFERRAL,
-            bonusId: 0,
-            baseValue: data.amount
-        })
+        // let res = await this.bonusService.awardBonus({
+        //     clientId: data.client_id,
+        //     userId: data.user_id,
+        //     amount: bonusSettings.bonus_amount,
+        //     // bonusType: BONUS_TYPE_REFERRAL,
+        //     bonusId: 0,
+        //     baseValue: data.amount
+        // })
 
-        return res.bonus.amount
+        // return res.bonus.amount
     }
 
 }

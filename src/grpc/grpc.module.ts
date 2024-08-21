@@ -4,12 +4,6 @@ import { GrpcController } from './grpc.controller';
 import { Bonus } from '../entity/bonus.entity';
 import { Userbonus } from '../entity/userbonus.entity';
 import { BonusService } from './services/bonus.service';
-import { Firstdeposit } from '../entity/firstdeposit.entity';
-import { Freebet } from '../entity/freebet.entity';
-import { Lostbet } from '../entity/lostbet.entity';
-import { Referral } from '../entity/referral.entity';
-import { Sharebet } from '../entity/sharebet.entity';
-import { Cashback } from '../entity/cashback.entity';
 import { join } from 'path';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 import { Bonusbet } from '../entity/bonusbet.entity';
@@ -27,13 +21,7 @@ import { ReportsService } from './services/reports.service';
     WalletModule,
     TypeOrmModule.forFeature([
       Bonus,
-      Firstdeposit,
-      Freebet,
-      Lostbet,
-      Referral,
-      Sharebet,
       Userbonus,
-      Cashback,
       Bonusbet,
       Campaignbonus,
       Transactions,
@@ -63,6 +51,5 @@ import { ReportsService } from './services/reports.service';
   ],
   controllers: [GrpcController],
   providers: [BonusBetService, BonusService, TrackierService, ReportsService],
-  exports: [TrackierService]
 })
 export class GrpcModule {}

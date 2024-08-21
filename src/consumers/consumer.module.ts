@@ -8,25 +8,14 @@ import { ConsumerController } from './consumer.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { RabbitMQChannels } from '@golevelup/nestjs-rabbitmq/lib/rabbitmq.interfaces';
 import { Bonus } from '../entity/bonus.entity';
-import { Firstdeposit } from '../entity/firstdeposit.entity';
-import { Freebet } from '../entity/freebet.entity';
-import { Lostbet } from '../entity/lostbet.entity';
-import { Referral } from '../entity/referral.entity';
-import { Sharebet } from '../entity/sharebet.entity';
 import { Userbonus } from '../entity/userbonus.entity';
 import { BetService } from './workers/bet.service';
 import { DepositService } from './workers/deposit.service';
 import { UserService } from './workers/user.service';
-import { Cashback } from '../entity/cashback.entity';
 import { BonusService } from '../grpc/services/bonus.service';
 import { Bonusbet } from '../entity/bonusbet.entity';
 import { Campaignbonus } from '../entity/campaignbonus.entity';
 import { Transactions } from '../entity/transactions.entity';
-import { TrackierService } from 'src/grpc/services/trackier.service';
-import { WalletService } from 'src/wallet/wallet.service';
-import { IdentityService } from 'src/identity/identity.service';
-import { WalletModule } from 'src/wallet/wallet.module';
-import { IdentityModule } from 'src/identity/identity.module';
 
 let exchanges = [];
 
@@ -57,14 +46,8 @@ for (const name of names) {
 @Module({
   imports: [
     TypeOrmModule.forFeature([
-      Bonus,
-      Firstdeposit,
-      Freebet,
-      Lostbet,
-      Referral,
-      Sharebet,
+      Bonus,      
       Userbonus,
-      Cashback,
       Bonusbet,
       Campaignbonus,
       Transactions,
@@ -78,8 +61,6 @@ for (const name of names) {
         timeout: 50000,
       },
     }),
-    WalletModule,
-    IdentityModule
   ],
   providers: [
     ConsumerService,
@@ -87,7 +68,6 @@ for (const name of names) {
     DepositService,
     UserService,
     BonusService,
-    TrackierService,
   ],
   controllers: [ConsumerController],
 })
