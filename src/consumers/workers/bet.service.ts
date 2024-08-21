@@ -8,7 +8,6 @@ import {Userbonus} from "../../entity/userbonus.entity";
 import {BonusService} from "../../grpc/services/bonus.service";
 import {Sharebet} from "../../entity/sharebet.entity";
 import {Cashback} from "../../entity/cashback.entity";
-import {AwardBonusRequest} from "../../grpc/interfaces/award.bonus.request.interface";
 
 @Injectable()
 export class BetService {

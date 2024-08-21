@@ -63,5 +63,6 @@ import { ReportsService } from './services/reports.service';
   ],
   controllers: [GrpcController],
   providers: [BonusBetService, BonusService, TrackierService, ReportsService],
+  exports: [TrackierService]
 })
 export class GrpcModule {}

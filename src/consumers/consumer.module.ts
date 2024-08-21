@@ -22,6 +22,11 @@ import { BonusService } from '../grpc/services/bonus.service';
 import { Bonusbet } from '../entity/bonusbet.entity';
 import { Campaignbonus } from '../entity/campaignbonus.entity';
 import { Transactions } from '../entity/transactions.entity';
+import { TrackierService } from 'src/grpc/services/trackier.service';
+import { WalletService } from 'src/wallet/wallet.service';
+import { IdentityService } from 'src/identity/identity.service';
+import { WalletModule } from 'src/wallet/wallet.module';
+import { IdentityModule } from 'src/identity/identity.module';
 
 let exchanges = [];
 
@@ -73,7 +78,8 @@ for (const name of names) {
         timeout: 50000,
       },
     }),
-    ConsumerModule,
+    WalletModule,
+    IdentityModule
   ],
   providers: [
     ConsumerService,
@@ -81,6 +87,7 @@ for (const name of names) {
     DepositService,
     UserService,
     BonusService,
+    TrackierService,
   ],
   controllers: [ConsumerController],
 })
