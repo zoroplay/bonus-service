@@ -1,49 +1,32 @@
 import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { ConfigModule } from '@nestjs/config';
-// import {ConsumerModule} from "./consumers/consumer.module";
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
+// import {ConsumerModule} from "./consumers/consumer.module";
 // import {RabbitmqModule} from "./rabbitmq.module";
 import 'dotenv/config';
 import { GrpcModule } from './grpc/grpc.module';
 import { ScheduleModule } from '@nestjs/schedule';
 import { Bonus } from './entity/bonus.entity';
 import { Userbonus } from './entity/userbonus.entity';
-import { Bonusbet } from './entity/bonusbet.entity';
-import { Campaignbonus } from './entity/campaignbonus.entity';
 import { Transactions } from './entity/transactions.entity';
 import { WalletModule } from './wallet/wallet.module';
+import typeorm from './db/typeorm';
 
 @Module({
   imports: [
     ScheduleModule.forRoot(),
     ConfigModule.forRoot({
-      // envFilePath: '.env',
-      // ignoreEnvFile: false,
       isGlobal: true,
+      load: [typeorm]
     }),
     // ConsumerModule,
     // RabbitmqModule,
     GrpcModule,
-    TypeOrmModule.forRoot({
-      type: process.env.DB_TYPE as any,
-      host: process.env.DB_HOST,
-      port: parseInt(process.env.DB_PORT),
-      username: process.env.DB_USERNAME,
-      password: process.env.DB_PASSWORD,
-      database: process.env.DB_NAME,
-      entities: [
-        Bonus,
-        Userbonus,
-        Bonusbet,
-        Campaignbonus,
-        Transactions,
-      ],
-      //entities: [__dirname + '/entity/*.ts'],
-      //entities: [__dirname + '/ ** / *.entity{.ts,.js}'],
-      //entities: [__dirname + '/ ** / *.entity{.ts,.js}'],
-      synchronize: true,
+    TypeOrmModule.forRootAsync({
+      inject: [ConfigService],
+      useFactory: async (configService: ConfigService) => (configService.get('typeorm'))
     }),
     TypeOrmModule.forFeature([
       Bonus,
