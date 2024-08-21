@@ -30,11 +30,11 @@ export class Campaignbonus {
     bonus: Bonus;
 
     @Index()
-    @Column({ type: "date" })
+    @Column({ type: "date", nullable: true })
     start_date: string;
 
     @Index()
-    @Column({ type: "date" })
+    @Column({ type: "date", nullable: true })
     end_date: string;
 
     @Index()
