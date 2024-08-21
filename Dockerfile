@@ -3,6 +3,7 @@ RUN mkdir -p /app
 WORKDIR /app
 COPY . .
 # RUN apk add --update python3 make g++ && rm -rf /var/cache/apk/*
+RUN rm -rf dist
 RUN npm install
 RUN npm run proto:install
 RUN npm run build
