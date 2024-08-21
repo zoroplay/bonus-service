@@ -9,6 +9,12 @@ import 'dotenv/config';
 import { GrpcModule } from './grpc/grpc.module';
 import { ScheduleModule } from '@nestjs/schedule';
 import { Bonus } from './entity/bonus.entity';
+import { Cashback } from './entity/cashback.entity';
+import { Firstdeposit } from './entity/firstdeposit.entity';
+import { Freebet } from './entity/freebet.entity';
+import { Lostbet } from './entity/lostbet.entity';
+import { Referral } from './entity/referral.entity';
+import { Sharebet } from './entity/sharebet.entity';
 import { Userbonus } from './entity/userbonus.entity';
 import { Bonusbet } from './entity/bonusbet.entity';
 import { Campaignbonus } from './entity/campaignbonus.entity';
@@ -35,7 +41,13 @@ import { WalletModule } from './wallet/wallet.module';
       database: process.env.DB_NAME,
       entities: [
         Bonus,
+        Firstdeposit,
+        Freebet,
+        Lostbet,
+        Referral,
+        Sharebet,
         Userbonus,
+        Cashback,
         Bonusbet,
         Campaignbonus,
         Transactions,
@@ -50,7 +62,7 @@ import { WalletModule } from './wallet/wallet.module';
       Userbonus,
       Transactions
     ]),
-    WalletModule
+    WalletModule,
   ],
   controllers: [AppController],
   providers: [AppService],
