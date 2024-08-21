@@ -54,6 +54,7 @@ export class Bonus {
     @Column({ type: "int", default: "24" })
     duration: number;
 
+    
     // @Index()
     // @Column({ type: "int", default: "3" })
     // minimum_events: number;

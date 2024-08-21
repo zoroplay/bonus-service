@@ -18,6 +18,7 @@ export class Transactions {
     @Column({ type: "bigint"})
     user_bonus_id: number;
 
+    
     @Index()
     @Column({ type: "bigint"})
     amount: number;

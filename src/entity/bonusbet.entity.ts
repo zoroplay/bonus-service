@@ -17,6 +17,7 @@ export class Bonusbet {
     @Index()
     @Column({ type: "bigint"})
     user_bonus_id: number;
+    
 
     @Index()
     @Column({ type: "varchar", length: 150})
