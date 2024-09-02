@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { GetUserDetailsRequest, IDENTITY_SERVICE_NAME, IdentityServiceClient, protobufPackage } from './identity.pb';
+import { GetUserDetailsRequest, IDENTITY_SERVICE_NAME, IdentityServiceClient, protobufPackage, SingleItemRequest } from './identity.pb';
 import { ClientGrpc } from '@nestjs/microservices';
 import { firstValueFrom } from 'rxjs';
 
@@ -17,5 +17,9 @@ export class IdentityService {
 
     public async getDetails(param: GetUserDetailsRequest) {
       return await firstValueFrom(this.svc.getUserDetails(param));
+    }
+
+    public async getTrackierKeys(param: SingleItemRequest) {
+      return await firstValueFrom(this.svc.getTrackierKeys(param));
     }
 }

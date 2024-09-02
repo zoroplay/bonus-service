@@ -5,6 +5,7 @@ import { Bonus } from 'src/entity/bonus.entity';
 import { Repository } from 'typeorm';
 import { CreateCampaignBonusDto } from '../interfaces/campaign.bonus.interface';
 import * as dayjs from 'dayjs';
+import { IdentityService } from 'src/identity/identity.service';
 
 @Injectable()
 export class TrackierService {
@@ -13,21 +14,23 @@ export class TrackierService {
 
     constructor(
         @InjectRepository(Bonus)
-        private readonly bonusRepository: Repository<Bonus>
+        private readonly bonusRepository: Repository<Bonus>,
+        private readonly identityService: IdentityService,
     ) {}
 
-    async getAccessToken(clientId) {
+    async getAccessToken(auth_code: string) {
         // console.log('AUTH CODE', process.env.TRACKIER_AUTH_CODE)
         return axios.post(
             `${this.baseUrl}/oauth/access-refresh-token`,
             {
-                auth_code: process.env[`TRACKIER_AUTH_CODE_${clientId}`],
+                auth_code,
             },
         );
     }
 
     async createTrackierPromoCode(data: CreateCampaignBonusDto) {
         try {
+
             const bonus = await this.bonusRepository.findOne({where: {id: data.bonusId}});
             const now = new Date();
             const start = new Date(data.startDate);
@@ -47,18 +50,22 @@ export class TrackierService {
                 endDate: data.endDate,
             }
 
-            const authRes = await this.getAccessToken(data.clientId);
-            
-            if (!authRes.data.success) {
-                console.log('Error sending trackier result', authRes);
-            }
+            // get trackier keys
+            const keys = await this.identityService.getTrackierKeys({itemId: data.clientId});
 
-            // console.log(payload)
+            if (keys.success) {
+                const authRes = await this.getAccessToken(keys.data.AuthCode);
+                
+                if (!authRes.data.success) {
+                    console.log('Error sending trackier result', authRes);
+                }
 
-            const apiKey = process.env[`TRACKIER_API_KEY_${data.clientId}`]
-            console.log('API KEY', apiKey)
+                // console.log(payload)
 
-            if (apiKey) {
+                const apiKey = keys.data.ApiKey
+                
+                console.log('API KEY', apiKey)
+
                 const resp = await axios.post(
                     `${this.baseUrl}/coupon`, payload,
                     {
@@ -79,31 +86,35 @@ export class TrackierService {
 
     async createCustomer (data) {
         try {
-            const authRes = await this.getAccessToken(data.clientId);
-            const apiKey = process.env[`TRACKIER_API_KEY_${data.clientId}`]
-                
-            if (authRes.data.success && apiKey) {
-                const payload = {
-                    customerId: data.username,
-                    customerName: data.username,
-                    date: dayjs().format('YYYY-MM-DD'),
-                    timestamp: dayjs().unix(),
-                    country: 'NG',
-                    currency: 'ngn',
-                    promocode: data.promoCode,
-                    productId: '1',
-                }
+            // get trackier keys
+            const keys = await this.identityService.getTrackierKeys({itemId: data.clientId});
+            if (keys.success) {
+                const authRes = await this.getAccessToken(keys.data.AuthCode);
+                const apiKey = keys.data.ApiKey;
+                    
+                if (authRes.data.success && apiKey) {
+                    const payload = {
+                        customerId: data.username,
+                        customerName: data.username,
+                        date: dayjs().format('YYYY-MM-DD'),
+                        timestamp: dayjs().unix(),
+                        country: 'NG',
+                        currency: 'ngn',
+                        promocode: data.promoCode,
+                        productId: '1',
+                    }
 
-                return await axios.post(
-                    `${this.baseUrl}/customer`, payload,
-                    {
-                        headers: {
-                            'x-api-key': apiKey,
-                            authorization: `BEARER ${authRes.data.accessToken}`,
+                    return await axios.post(
+                        `${this.baseUrl}/customer`, payload,
+                        {
+                            headers: {
+                                'x-api-key': apiKey,
+                                authorization: `BEARER ${authRes.data.accessToken}`,
+                            },
                         },
-                    },
-                );
-                // console.log('create customer response ', resp.data);
+                    );
+                    // console.log('create customer response ', resp.data);
+                }
             }
         } catch (e) {
             console.log('Unable to create trackier customer', e.message);
