@@ -321,7 +321,7 @@ export class BonusBetService {
                 // const completed_rollover_count = bonus.completed_rollover_count + 1;
                 let can_redeem = 0;
 
-                if (userBonus.completed_rollover_count === userBonus.rollover_count && userBonus.pending_amount === 0) {
+                if (userBonus.completed_rollover_count === userBonus.rollover_count) {
                     can_redeem = 1;
                 }
 
