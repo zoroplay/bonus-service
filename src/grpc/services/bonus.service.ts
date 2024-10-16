@@ -754,44 +754,78 @@ export class BonusService {
 
     async checkDepositBonus(param: CheckDepositBonusRequest): Promise<CheckDepositBonusResponse> {
         try {
-            console.log(param)
+            // console.log(param)
             let success, message, data;
-            // find first_deposit bonus
-            const firstDeposit = await this.bonusRepository.findOne({where: {bonus_type: 'first_deposit', status: 1, client_id: param.clientId}});
-            const deposit = await this.bonusRepository.findOne({where: {bonus_type: 'deposit', status: 1, client_id: param.clientId}});
+            // check if user has an activate bonus
+            const userBonus = await this.userBonusRepository.findOne({where: {
+                user_id: param.userId,
+                client_id: param.clientId,
+                status: 1
+            }});
 
-            // get user details
-            const userRes = await this.identityService.getDetails({
-                userId: param.userId, 
-                clientId: param.clientId
-            });
+            if (!userBonus) {
+                // find first_deposit bonus
+                const firstDeposit = await this.bonusRepository.findOne({where: {bonus_type: 'first_deposit', status: 1, client_id: param.clientId}});
+                const deposit = await this.bonusRepository.findOne({where: {bonus_type: 'deposit', status: 1, client_id: param.clientId}});
 
-            if (userRes.success) {
+                // get user details
+                const userRes = await this.identityService.getDetails({
+                    userId: param.userId, 
+                    clientId: param.clientId
+                });
 
-                let user = userRes.data;
+                if (userRes.success) {
 
-                if (firstDeposit){ 
-                    if (dayjs(user.registered).isBefore(firstDeposit.created)){
-                        success = false; 
-                        message = 'Not applicable'
-                    } else {
+                    let user = userRes.data;
+
+                    if (firstDeposit){ 
+                        if (dayjs(user.registered).isBefore(firstDeposit.created)){
+                            success = false; 
+                            message = 'Not applicable'
+                        } else {
+                            // check if user has been awarded first_deposit bonus before
+                            const userBonus = await this.userBonusRepository.findOne({where: {
+                                user_id: param.userId,
+                                client_id: param.clientId,
+                                bonus_id: firstDeposit.id,
+                            }});
+                            if (userBonus) {
+                                success = false; 
+                                message = 'Bonus already used'
+                            } else {
+                                success = true;
+                                message = 'Bonus available',
+                                data = {
+                                    bonusId: firstDeposit.id,
+                                    value: firstDeposit.bonus_amount,
+                                    type: firstDeposit.credit_type,
+                                    name: firstDeposit.name
+                                }
+
+                                return {success, message, data};
+                            }
+                        }
+                    }
+
+                    if (deposit) {
                         // check if user has been awarded first_deposit bonus before
                         const userBonus = await this.userBonusRepository.findOne({where: {
                             user_id: param.userId,
                             client_id: param.clientId,
-                            bonus_id: firstDeposit.id,
-                        }});
+                            bonus_id: deposit.id,
+                        }})
+
                         if (userBonus) {
-                            success = false; 
-                            message = 'Bonus already used'
+                        success = false; 
+                        message = 'Bonus already used'
                         } else {
                             success = true;
                             message = 'Bonus available',
                             data = {
-                                bonusId: firstDeposit.id,
-                                value: firstDeposit.bonus_amount,
-                                type: firstDeposit.credit_type,
-                                name: firstDeposit.name
+                                bonusId: deposit.id,
+                                value: deposit.bonus_amount,
+                                type: deposit.credit_type,
+                                name: deposit.name
                             }
 
                             return {success, message, data};
@@ -799,33 +833,10 @@ export class BonusService {
                     }
                 }
 
-                if (deposit) {
-                    // check if user has been awarded first_deposit bonus before
-                    const userBonus = await this.userBonusRepository.findOne({where: {
-                        user_id: param.userId,
-                        client_id: param.clientId,
-                        bonus_id: deposit.id,
-                    }})
-
-                    if (userBonus) {
-                      success = false; 
-                      message = 'Bonus already used'
-                    } else {
-                        success = true;
-                        message = 'Bonus available',
-                        data = {
-                            bonusId: deposit.id,
-                            value: deposit.bonus_amount,
-                            type: deposit.credit_type,
-                            name: deposit.name
-                        }
-
-                        return {success, message, data};
-                    }
-                }
+                return {success, message, data};
+            } else {
+                return {success: false, message: 'User has an activte bonus'}
             }
-
-            return {success, message, data};
 
         } catch(e) {
             console.log(e.message)
@@ -930,7 +941,21 @@ export class BonusService {
 
                 let userId = parseInt(parts[0]);
 
-                await this.deactivateUserBonus(userId);
+                // check if user has an active bonus
+                const activeBonus = await this.userBonusRepository.findOne({where: {
+                        user_id: userId,
+                        client_id: data.clientId,
+                        status: 1
+                    }
+                });
+
+                // do not grant bonus if user has an active bonus
+                if (activeBonus)
+                    return {
+                        status: 401,
+                        description: "User has an active bonus",
+                        bonus: null,
+                    }
 
                 existingUserBonus.user_id = userId
                 existingUserBonus.username = data.username;
@@ -1008,8 +1033,17 @@ export class BonusService {
                 const usernames = data.username.split(',')
                 for (const usr of parts) {
                     let userId = parseInt(usr);
-                    // deactivate any active bonus
-                    await this.deactivateUserBonus(userId);
+
+                    // check if user has an active bonus
+                    const activeBonus = await this.userBonusRepository.findOne({where: {
+                            user_id: userId,
+                            client_id: data.clientId,
+                            status: 1
+                        }
+                    });
+                    // do not grant bonus if user has an active bonus
+                    if (activeBonus)
+                        continue;
 
                     // check if user has been awarded this bonus before
                     // const isAwarded = await this.userBonusRepository.findOne({
@@ -1591,44 +1625,44 @@ export class BonusService {
         }
     }
 
-    async deactivateUserBonus(userId) {
-        // get active bonus
-        const userBonus = await this.userBonusRepository.findOne({
-            where: {
-                user_id: userId,
-                status: 1
-            }
-        });
+    // async deactivateUserBonus(userId) {
+    //     // get active bonus
+    //     const userBonus = await this.userBonusRepository.findOne({
+    //         where: {
+    //             user_id: userId,
+    //             status: 1
+    //         }
+    //     });
 
-        if (userBonus) {
-            // deactivate bonus to
-            await this.userBonusRepository.update(
-                {
-                    status: 1,
-                    user_id: userId
-                },{
-                    status: 2,
-                }
-            );
+    //     if (userBonus) {
+    //         // deactivate bonus to
+    //         await this.userBonusRepository.update(
+    //             {
+    //                 status: 1,
+    //                 user_id: userId
+    //             },{
+    //                 status: 2,
+    //             }
+    //         );
 
-            if (userBonus.balance > 1) {
-                // debit remaining bonus amount from user balance
-                let debitPayload = {
-                    amount: ''+userBonus.balance,
-                    userId: userId,
-                    clientId: userBonus.client_id,
-                    description: userBonus.name + " deactivated",
-                    subject: 'Bonus Deactivated',
-                    source: 'mobile',
-                    wallet: 'sport-bonus',
-                    channel: 'Internal',
-                    username: userBonus.username
-                }
+    //         if (userBonus.balance > 1) {
+    //             // debit remaining bonus amount from user balance
+    //             let debitPayload = {
+    //                 amount: ''+userBonus.balance,
+    //                 userId: userId,
+    //                 clientId: userBonus.client_id,
+    //                 description: userBonus.name + " deactivated",
+    //                 subject: 'Bonus Deactivated',
+    //                 source: 'mobile',
+    //                 wallet: 'sport-bonus',
+    //                 channel: 'Internal',
+    //                 username: userBonus.username
+    //             }
 
-                await this.walletService.debit(debitPayload);
-            }
-        }
-    }
+    //             await this.walletService.debit(debitPayload);
+    //         }
+    //     }
+    // }
 
     async deletePlayerData(user_id) {
         await this.bonusBetRepository.delete({user_id});
