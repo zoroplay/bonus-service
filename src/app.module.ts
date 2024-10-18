@@ -13,6 +13,7 @@ import { Userbonus } from './entity/userbonus.entity';
 import { Transactions } from './entity/transactions.entity';
 import { WalletModule } from './wallet/wallet.module';
 import typeorm from './db/typeorm';
+import { Bonusbet } from './entity/bonusbet.entity';
 
 @Module({
   imports: [
@@ -30,6 +31,7 @@ import typeorm from './db/typeorm';
     }),
     TypeOrmModule.forFeature([
       Bonus,
+      Bonusbet,
       Userbonus,
       Transactions
     ]),
