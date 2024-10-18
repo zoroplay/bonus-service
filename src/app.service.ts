@@ -8,12 +8,16 @@ import { Transactions } from './entity/transactions.entity';
 import * as dayjs from 'dayjs';
 import { REFERENCE_TYPE_WONBET, TRANSACTION_TYPE_DEBIT } from './constants';
 import { WalletService } from './wallet/wallet.service';
+import { Bonusbet } from './entity/bonusbet.entity';
 
 @Injectable()
 export class AppService {
   constructor(
     @InjectRepository(Bonus)
     private bonusRepository: Repository<Bonus>,
+
+    @InjectRepository(Bonusbet)
+    private bonusBetRepository: Repository<Bonusbet>,
 
     @InjectRepository(Userbonus)
     private userBonusRepository: Repository<Userbonus>,
@@ -92,31 +96,36 @@ export class AppService {
     for (const playerBonus of playerBonuses) {
       const bonus = await this.bonusRepository.findOne({where: {id: playerBonus.bonus_id}});
 
-      if(playerBonus.completed_rollover_count >= bonus.rollover_count) {
-        let amount = playerBonus.balance;
-        if (playerBonus.balance > bonus.maximum_winning)
-          amount = bonus.maximum_winning;
+      //check if user has running bet
+      const runningBet = await this.bonusBetRepository.count({where: {status: 0}});
 
-        await this.userBonusRepository.update(
-          {id: playerBonus.id},
-          {status: 2}
-        );
+      if (runningBet === 0) {
+        if(playerBonus.completed_rollover_count >= bonus.rollover_count) {
+          let amount = playerBonus.balance;
+          if (playerBonus.balance > bonus.maximum_winning)
+            amount = bonus.maximum_winning;
 
-        let creditPayload = {
-          amount: ''+amount,
-          userId: playerBonus.user_id,
-          username: playerBonus.username,
-          clientId: bonus.client_id,
-          subject: "Bonus Won",
-          description: `Completed wagering requirements for ${bonus.name}`,
-          source: 'internal',
-          wallet: 'main',
-          channel: 'Internal'
-          // transaction_type: TRANSACTION_TYPE_PLACE_BET
+          await this.userBonusRepository.update(
+            {id: playerBonus.id},
+            {status: 2}
+          );
+
+          let creditPayload = {
+            amount: ''+amount,
+            userId: playerBonus.user_id,
+            username: playerBonus.username,
+            clientId: bonus.client_id,
+            subject: "Bonus Won",
+            description: `Completed wagering requirements for ${bonus.name}`,
+            source: 'internal',
+            wallet: 'main',
+            channel: 'Internal'
+            // transaction_type: TRANSACTION_TYPE_PLACE_BET
+          }
+
+          // credit user wallet with bonus balance
+          await this.walletService.awardBonusWinning(creditPayload);
         }
-
-        // credit user wallet with bonus balance
-        await this.walletService.awardBonusWinning(creditPayload);
       }
     }
   }
