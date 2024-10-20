@@ -85,6 +85,7 @@ export class AppService {
     }
   }
 
+  // @Timeout(10000)
   @Cron(CronExpression.EVERY_5_MINUTES)
   async checkCompleted () {
     console.log('running cron jobs to check wagering requirements');
@@ -95,38 +96,34 @@ export class AppService {
 
     for (const playerBonus of playerBonuses) {
       const bonus = await this.bonusRepository.findOne({where: {id: playerBonus.bonus_id}});
+      // console.log(bonus.rollover_count, playerBonus.completed_rollover_count)
+      if(playerBonus.completed_rollover_count >= bonus.rollover_count) {
+        let amount = playerBonus.balance;
+        if (playerBonus.balance > bonus.maximum_winning)
+          amount = bonus.maximum_winning;
 
-      //check if user has running bet
-      const runningBet = await this.bonusBetRepository.count({where: {status: 0}});
+        await this.userBonusRepository.update(
+          {id: playerBonus.id},
+          {status: 2}
+        );
 
-      if (runningBet === 0) {
-        if(playerBonus.completed_rollover_count >= bonus.rollover_count) {
-          let amount = playerBonus.balance;
-          if (playerBonus.balance > bonus.maximum_winning)
-            amount = bonus.maximum_winning;
-
-          await this.userBonusRepository.update(
-            {id: playerBonus.id},
-            {status: 2}
-          );
-
-          let creditPayload = {
-            amount: ''+amount,
-            userId: playerBonus.user_id,
-            username: playerBonus.username,
-            clientId: bonus.client_id,
-            subject: "Bonus Won",
-            description: `Completed wagering requirements for ${bonus.name}`,
-            source: 'internal',
-            wallet: 'main',
-            channel: 'Internal'
-            // transaction_type: TRANSACTION_TYPE_PLACE_BET
-          }
-
-          // credit user wallet with bonus balance
-          await this.walletService.awardBonusWinning(creditPayload);
+        let creditPayload = {
+          amount: ''+amount,
+          userId: playerBonus.user_id,
+          username: playerBonus.username,
+          clientId: bonus.client_id,
+          subject: "Bonus Won",
+          description: `Completed wagering requirements for ${bonus.name}`,
+          source: 'internal',
+          wallet: 'main',
+          channel: 'Internal'
+          // transaction_type: TRANSACTION_TYPE_PLACE_BET
         }
+        // console.log('sending wiinnings')
+        // credit user wallet with bonus balance
+        await this.walletService.awardBonusWinning(creditPayload);
       }
     }
+    
   }
 }
