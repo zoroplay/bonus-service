@@ -115,7 +115,7 @@ export class AppService {
           subject: "Bonus Won",
           description: `Completed wagering requirements for ${bonus.name}`,
           source: 'internal',
-          wallet: 'main',
+          wallet: 'sport-bonus',
           channel: 'Internal'
           // transaction_type: TRANSACTION_TYPE_PLACE_BET
         }
