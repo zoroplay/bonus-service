@@ -119,7 +119,7 @@ export class AppService {
           channel: 'Internal'
           // transaction_type: TRANSACTION_TYPE_PLACE_BET
         }
-        // console.log('sending wiinnings')
+        console.log('sending wiinnings')
         // credit user wallet with bonus balance
         await this.walletService.awardBonusWinning(creditPayload);
       }
