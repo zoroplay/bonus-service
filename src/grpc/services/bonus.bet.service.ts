@@ -235,7 +235,6 @@ export class BonusBetService {
                 }
             });
 
-            let rollover_count = parseInt(userBonus.completed_rollover_count.toString()) + 1;
             // let pending_amount = userBonus.pending_amount  - data.stake;
             let rolled_amount = parseFloat(userBonus.used_amount.toString()) + parseFloat(data.stake.toString());
             let balance = userBonus.balance - data.stake;
@@ -246,9 +245,7 @@ export class BonusBetService {
                     id: userBonus.id,
                 },
                 {
-                    completed_rollover_count: rollover_count,
                     rolled_amount,
-                    // pending_amount,
                     balance,
                     used_amount: parseFloat(userBonus.used_amount.toString()) + parseFloat(data.stake.toString()),
                 });
@@ -318,10 +315,11 @@ export class BonusBetService {
                 // let amount = data.amount - bet.stake;
                 if(amount > bonus.maximum_winning)
                     amount = bonus.maximum_winning;
-                // const completed_rollover_count = bonus.completed_rollover_count + 1;
-                let can_redeem = 0;
 
-                if (userBonus.completed_rollover_count === userBonus.rollover_count) {
+                let can_redeem = 0;
+                let completed_rollover_count = userBonus.completed_rollover_count + 1
+
+                if (completed_rollover_count === userBonus.rollover_count) {
                     can_redeem = 1;
                 }
 
@@ -358,6 +356,7 @@ export class BonusBetService {
                         {
                             id: userBonus.id
                         },{
+                            completed_rollover_count,
                             balance,
                             can_redeem,
                             pending_amount: pending_amount
@@ -388,7 +387,7 @@ export class BonusBetService {
                         },{
                             balance,
                             // pending_amount: parseFloat(''+userBonus.pending_amount) + parseFloat(''+bet.stake),
-                            completed_rollover_count: userBonus.completed_rollover_count - 1,
+                            completed_rollover_count,
                             rolled_amount: parseFloat(''+userBonus.rolled_amount) - parseFloat(''+bet.stake),
                             used_amount: parseFloat(''+userBonus.used_amount) - parseFloat(''+bet.stake)
                         }
