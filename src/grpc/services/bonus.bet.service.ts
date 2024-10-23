@@ -317,7 +317,7 @@ export class BonusBetService {
                     amount = bonus.maximum_winning;
 
                 let can_redeem = 0;
-                let completed_rollover_count = userBonus.completed_rollover_count + 1
+                let completed_rollover_count = parseInt(userBonus.completed_rollover_count.toString()) + 1
 
                 if (completed_rollover_count === userBonus.rollover_count) {
                     can_redeem = 1;
