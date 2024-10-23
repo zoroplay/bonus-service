@@ -99,7 +99,8 @@ export class AppService {
       // console.log(bonus.rollover_count, playerBonus.completed_rollover_count)
       if(playerBonus.completed_rollover_count >= bonus.rollover_count) {
         let amount = playerBonus.balance;
-        if (playerBonus.balance > bonus.maximum_winning)
+
+        if (parseFloat(playerBonus.balance.toString()) > parseFloat(bonus.maximum_winning.toString()))
           amount = bonus.maximum_winning;
 
         await this.userBonusRepository.update(
